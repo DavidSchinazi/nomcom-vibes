@@ -16,11 +16,11 @@ def get_session_id():
 
 def get_feedback():
     session_id = get_session_id()
-    with open("nominees.json", "r") as f:
+    with open("data/nominees.json", "r") as f:
         nominees_data = json.load(f)
 
-    if not os.path.exists("feedback_html"):
-        os.makedirs("feedback_html")
+    if not os.path.exists("data/feedback_html"):
+        os.makedirs("data/feedback_html")
 
     for nominee in nominees_data["objects"]:
         nominee_id = nominee["id"]
@@ -28,7 +28,7 @@ def get_feedback():
         print(f"Downloading feedback for nominee {nominee_id} from {url}")
         response = requests.get(url, cookies={"sessionid": session_id})
         response.raise_for_status()
-        with open(f"feedback_html/{nominee_id}.html", "w") as f:
+        with open(f"data/feedback_html/{nominee_id}.html", "w") as f:
             f.write(response.text)
         print(f"Saved feedback for nominee {nominee_id} to feedback_html/{nominee_id}.html")
 

@@ -8,9 +8,9 @@ def get_nominees():
     response.raise_for_status()  # Raise an exception for HTTP errors
     nominees_data = response.json()
 
-    with open("nominees.json", "w") as f:
+    with open("data/nominees.json", "w") as f:
         json.dump(nominees_data, f, indent=4)
-    print("Nominees data downloaded and saved to nominees.json")
+    print("Nominees data downloaded and saved to data/nominees.json")
 
 if __name__ == "__main__":
     get_nominees()
