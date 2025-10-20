@@ -75,7 +75,7 @@ if __name__ == "__main__":
             with open(input_file, "r") as f:
                 feedback_data = json.load(f)
 
-            feedback_text = "\n".join([item.get("feedback", "") for item in feedback_data])
+            feedback_text = "\n".join([item.get("feedback", "") for item in feedback_data if "subject" not in item])
             summary = get_summary(feedback_text)
 
             create_html_summary(summary, feedback_data, output_file)
