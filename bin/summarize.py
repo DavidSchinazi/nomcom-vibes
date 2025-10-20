@@ -29,9 +29,13 @@ def get_summary(feedback_text):
         response = model.generate_content(f"Summarize the following feedback. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML.:\n\n{feedback_text}")
         summary_text = response.text
         # Extract HTML from markdown code block if present
-        match = re.search(r"```html\n(.*?)```", summary_text, re.DOTALL)
+        match = re.search(r"<[a-zA-Z][^>]*>.*</[a-zA-Z][^>]*>", summary_text, re.DOTALL)
         if match:
-            return match.group(1).strip()
+            return match.group(0).strip()
+        # If no HTML tags found, try to remove the preamble
+        preamble = "Of course. Here is a summary of the feedback in HTML format."
+        if summary_text.startswith(preamble):
+            return summary_text[len(preamble):].strip()
         return summary_text
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
