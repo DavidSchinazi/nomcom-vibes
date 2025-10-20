@@ -42,12 +42,21 @@ def get_summary(feedback_text):
 
 def create_html_summary(summary, feedback_data, output_file):
     """Creates an HTML file with the summary and feedback."""
+    feedback_with_subject = [item for item in feedback_data if "subject" in item]
+    feedback_without_subject = [item for item in feedback_data if "subject" not in item]
+
     with open(output_file, "w") as f:
         f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
         f.write("<h1>Summary</h1>\n")
         f.write(summary)
         f.write("<h1>All Feedback</h1>\n")
-        for feedback in feedback_data:
+        for feedback in feedback_without_subject:
+            f.write("<hr>\n")
+            for key, value in feedback.items():
+                f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
+        if feedback_with_subject:
+            f.write("<h2>Self Feedback</h2>\n")
+        for feedback in feedback_with_subject:
             f.write("<hr>\n")
             for key, value in feedback.items():
                 f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
