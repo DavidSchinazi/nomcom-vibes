@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import argparse
+import re
 import os
 import json
 import google.generativeai as genai
@@ -24,17 +26,22 @@ def get_summary(feedback_text):
         api_key = get_api_key()
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro-latest')
-        response = model.generate_content(f"Summarize the following feedback:\n\n{feedback_text}")
-        return response.text
+        response = model.generate_content(f"Summarize the following feedback. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML.:\n\n{feedback_text}")
+        summary_text = response.text
+        # Extract HTML from markdown code block if present
+        match = re.search(r"```html\n(.*?)```", summary_text, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        return summary_text
     except Exception as e:
-        return f"Error summarizing feedback: {e}"
+        return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
 
 def create_html_summary(summary, feedback_data, output_file):
     """Creates an HTML file with the summary and feedback."""
     with open(output_file, "w") as f:
         f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
         f.write("<h1>Summary</h1>\n")
-        f.write(f"<p>{summary}</p>\n")
+        f.write(summary)
         f.write("<h1>All Feedback</h1>\n")
         for feedback in feedback_data:
             f.write("<hr>\n")
@@ -43,17 +50,24 @@ def create_html_summary(summary, feedback_data, output_file):
         f.write("</body>\n</html>")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Summarize feedback using Gemini.')
+    parser.add_argument('--file', help='Optional: Specify a single JSON file to summarize (e.g., 123.json).')
+    args = parser.parse_args()
+
     input_dir = "data/feedback_json"
     output_dir = "data/summaries"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    for filename in os.listdir(input_dir):
-        if filename.endswith(".json"):
-            input_file = os.path.join(input_dir, filename)
-            output_file = os.path.join(output_dir, filename.replace(".json", ".html"))
+    if args.file:
+        filename = args.file
+        input_file = os.path.join(input_dir, filename)
+        output_file = os.path.join(output_dir, filename.replace(".json", ".html"))
 
+        if not os.path.exists(input_file):
+            print(f"Error: File {input_file} not found.")
+        else:
             with open(input_file, "r") as f:
                 feedback_data = json.load(f)
 
@@ -62,3 +76,17 @@ if __name__ == "__main__":
 
             create_html_summary(summary, feedback_data, output_file)
             print(f"Successfully summarized {input_file} and saved to {output_file}")
+    else:
+        for filename in os.listdir(input_dir):
+            if filename.endswith(".json"):
+                input_file = os.path.join(input_dir, filename)
+                output_file = os.path.join(output_dir, filename.replace(".json", ".html"))
+
+                with open(input_file, "r") as f:
+                    feedback_data = json.load(f)
+
+                feedback_text = "\n".join([item.get("feedback", "") for item in feedback_data])
+                summary = get_summary(feedback_text)
+
+                create_html_summary(summary, feedback_data, output_file)
+                print(f"Successfully summarized {input_file} and saved to {output_file}")
