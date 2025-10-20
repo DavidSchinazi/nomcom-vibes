@@ -31,27 +31,23 @@ def parse_feedback(input_file, output_file):
                 dd = dt.find_next_sibling("dd")
                 if dd:
                     dd_text = dd.text.strip()
-                    if dt_text == "From":
-                        # Extract name and email more carefully
-                        full_text = dd.text
-                        match = re.match(r"(.*?)\s*<([^>]+)>", full_text)
-                        if match:
-                            data["name"] = match.group(1).strip()
-                            data["email"] = match.group(2).strip()
-                        else:
-                            data["name"] = dd.contents[0].strip().replace('<','').strip()
-                            email_tag = dd.find("a")
-                            if email_tag and "mailto:" in email_tag.get("href", ""):
-                                data["email"] = email_tag.text.strip()
-
-                    elif dt_text == "Date":
+                    if "From" in dt_text:
+                        if len(dd.contents) > 0:
+                            name = dd.contents[0].strip().replace('<', '').strip()
+                            data['name'] = name
+                        email_tag = dd.find("a")
+                        if email_tag and "mailto:" in email_tag.get("href", ""):
+                            data["email"] = email_tag.text.strip()
+                    elif "Date" in dt_text:
                         data["date"] = dd_text
-                    elif dt_text == "Positions":
+                    elif "Positions" in dt_text:
                         data["position"] = dd_text
-                    elif dt_text == "Feedback":
+                    elif "Feedback" in dt_text:
                         pre_tag = dd.find("pre")
                         if pre_tag:
                             data["feedback"] = pre_tag.text.strip()
+                    elif "Subject" in dt_text:
+                        data["subject"] = dd_text
             
             if data:
                 feedback_data.append(data)
