@@ -9,7 +9,7 @@ def get_session_id():
     if session_id_file.exists():
         return session_id_file.read_text().strip()
     else:
-        session_id = input("Please enter your session ID: ")
+        session_id = input("Please enter your IETF Datatracker session ID: ")
         session_id_file.parent.mkdir(exist_ok=True)
         session_id_file.write_text(session_id)
         return session_id
