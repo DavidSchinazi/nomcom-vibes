@@ -3,6 +3,7 @@ import argparse
 import requests
 import json
 import os
+from get_positions import get_position_name
 
 NOMINEES_DATA = None
 
@@ -57,7 +58,7 @@ def get_nominee_info(nominee_id, force_download=False):
 
     nominee_info['nominee_id'] = nominee_id
     nominee_info['email'] = email_data['address']
-    nominee_info['nominee_position'] = nominee['nominee_position']
+    nominee_info['positions'] = [get_position_name(r, force_download=force_download) for r in nominee['nominee_position']]
 
     os.makedirs(os.path.dirname(nominee_file), exist_ok=True)
     with open(nominee_file, "w") as f:

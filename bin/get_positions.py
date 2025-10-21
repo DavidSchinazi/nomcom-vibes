@@ -29,6 +29,14 @@ def get_positions(force_download=False):
     POSITIONS_DATA = positions_data
     return POSITIONS_DATA
 
+def get_position_name(resource_uri, force_download=False):
+    positions = get_positions(force_download=force_download)
+    for position in positions['objects']:
+        if position['resource_uri'] == resource_uri:
+            return position['name']
+    return None
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
