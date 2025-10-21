@@ -58,6 +58,17 @@ def parse_feedback(input_file, output_file):
 
     print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")
 
+def parse_all_feedback():
+    input_dir = "data/feedback_html"
+    output_dir = "data/feedback_json"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    for filename in os.listdir(input_dir):
+        if filename.endswith(".html"):
+            input_file = os.path.join(input_dir, filename)
+            output_file = os.path.join(output_dir, filename.replace(".html", ".json"))
+            parse_feedback(input_file, output_file)
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         # Set up command-line argument parsing
@@ -67,12 +78,4 @@ if __name__ == "__main__":
         args = parser.parse_args()
         parse_feedback(args.input_file, args.output_file)
     else:
-        input_dir = "data/feedback_html"
-        output_dir = "data/feedback_json"
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        for filename in os.listdir(input_dir):
-            if filename.endswith(".html"):
-                input_file = os.path.join(input_dir, filename)
-                output_file = os.path.join(output_dir, filename.replace(".html", ".json"))
-                parse_feedback(input_file, output_file)
+        parse_all_feedback()

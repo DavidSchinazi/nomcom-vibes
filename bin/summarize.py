@@ -62,44 +62,41 @@ def create_html_summary(summary, feedback_data, output_file):
                 f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
         f.write("</body>\n</html>")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Summarize feedback using Gemini.')
-    parser.add_argument('--file', help='Optional: Specify a single JSON file to summarize (e.g., 123.json).')
-    args = parser.parse_args()
+def process_feedback_and_create_summary(input_file, output_file):
+    with open(input_file, "r") as f:
+        feedback_data = json.load(f)
 
+    feedback_text = "\n".join([item.get("feedback", "") for item in feedback_data if "subject" not in item])
+    summary = get_summary(feedback_text)
+
+    create_html_summary(summary, feedback_data, output_file)
+    print(f"Successfully summarized {input_file} and saved to {output_file}")
+
+def run_summarization(file_to_summarize=None):
     input_dir = "data/feedback_json"
     output_dir = "data/summaries"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    if args.file:
-        filename = args.file
+    if file_to_summarize:
+        filename = file_to_summarize
         input_file = os.path.join(input_dir, filename)
         output_file = os.path.join(output_dir, filename.replace(".json", ".html"))
 
         if not os.path.exists(input_file):
             print(f"Error: File {input_file} not found.")
         else:
-            with open(input_file, "r") as f:
-                feedback_data = json.load(f)
-
-            feedback_text = "\n".join([item.get("feedback", "") for item in feedback_data if "subject" not in item])
-            summary = get_summary(feedback_text)
-
-            create_html_summary(summary, feedback_data, output_file)
-            print(f"Successfully summarized {input_file} and saved to {output_file}")
+            process_feedback_and_create_summary(input_file, output_file)
     else:
         for filename in os.listdir(input_dir):
             if filename.endswith(".json"):
                 input_file = os.path.join(input_dir, filename)
                 output_file = os.path.join(output_dir, filename.replace(".json", ".html"))
+                process_feedback_and_create_summary(input_file, output_file)
 
-                with open(input_file, "r") as f:
-                    feedback_data = json.load(f)
-
-                feedback_text = "\n".join([item.get("feedback", "") for item in feedback_data])
-                summary = get_summary(feedback_text)
-
-                create_html_summary(summary, feedback_data, output_file)
-                print(f"Successfully summarized {input_file} and saved to {output_file}")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Summarize feedback using Gemini.')
+    parser.add_argument('--file', help='Optional: Specify a single JSON file to summarize (e.g., 123.json).')
+    args = parser.parse_args()
+    run_summarization(args.file)
