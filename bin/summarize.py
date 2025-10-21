@@ -21,12 +21,12 @@ def get_api_key():
         api_key_file.write_text(api_key)
         return api_key
 
-def get_summary(feedback_text):
+def get_summary(feedback_text, use_pro_model=False):
     """Summarizes the feedback text using the Gemini API."""
     try:
         api_key = get_api_key()
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro-latest')
+        model = genai.GenerativeModel('gemini-pro-latest' if use_pro_model else 'gemini-flash-latest')
         response = model.generate_content(f"Summarize the following feedback. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML.:\n\n{feedback_text}")
         summary_text = response.text
         # Extract HTML from markdown code block if present
