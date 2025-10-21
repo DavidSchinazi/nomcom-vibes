@@ -6,8 +6,10 @@ import re
 import os
 import sys
 from get_nominees import get_nominees
+from get_feedback import save_html_feedback_for_nominee
 
-def parse_feedback(nominee_id):
+def parse_feedback(nominee_id, force_download=False):
+    save_html_feedback_for_nominee(nominee_id, force_download=force_download)
     input_file = f"data/feedback_html/{nominee_id}.html"
     output_file = f"data/feedback_json/{nominee_id}.json"
     # Read the HTML file
@@ -58,27 +60,28 @@ def parse_feedback(nominee_id):
     result = {}
     result["feedback"] = feedback_data
 
+    output_dir = "data/feedback_json"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     # Write the extracted data to a JSON file
     with open(output_file, "w") as json_file:
         json.dump(result, json_file, indent=4)
 
     print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")
 
-def parse_all_feedback():
-    nominees_data = get_nominees()
-    output_dir = "data/feedback_json"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+def parse_all_feedback(force_download=False):
+    nominees_data = get_nominees(force_download=force_download)
     for nominee in nominees_data["objects"]:
         nominee_id = nominee["id"]
-        parse_feedback(nominee_id)
+        parse_feedback(nominee_id, force_download=force_download)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse feedback from HTML files.')
     parser.add_argument('nominee_id', nargs='?', help='Optional: The nominee ID to parse feedback for.')
+    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
     args = parser.parse_args()
 
     if args.nominee_id:
-        parse_feedback(args.nominee_id)
+        parse_feedback(args.nominee_id, force_download=args.force)
     else:
-        parse_all_feedback()
+        parse_all_feedback(force_download=args.force)
