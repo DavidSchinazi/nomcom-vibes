@@ -5,8 +5,11 @@ from bs4 import BeautifulSoup
 import re
 import os
 import sys
+from get_nominees import get_nominees
 
-def parse_feedback(input_file, output_file):
+def parse_feedback(nominee_id):
+    input_file = f"data/feedback_html/{nominee_id}.html"
+    output_file = f"data/feedback_json/{nominee_id}.json"
     # Read the HTML file
     with open(input_file, "r") as f:
         html_content = f.read()
@@ -62,23 +65,13 @@ def parse_feedback(input_file, output_file):
     print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")
 
 def parse_all_feedback():
-    input_dir = "data/feedback_html"
+    nominees_data = get_nominees()
     output_dir = "data/feedback_json"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    for filename in os.listdir(input_dir):
-        if filename.endswith(".html"):
-            input_file = os.path.join(input_dir, filename)
-            output_file = os.path.join(output_dir, filename.replace(".html", ".json"))
-            parse_feedback(input_file, output_file)
+    for nominee in nominees_data["objects"]:
+        nominee_id = nominee["id"]
+        parse_feedback(nominee_id)
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        # Set up command-line argument parsing
-        parser = argparse.ArgumentParser(description='Parse feedback from an HTML file and output to JSON.')
-        parser.add_argument('input_file', help='The input HTML file to parse.')
-        parser.add_argument('output_file', help='The output JSON file to write to.')
-        args = parser.parse_args()
-        parse_feedback(args.input_file, args.output_file)
-    else:
-        parse_all_feedback()
+    parse_all_feedback()
