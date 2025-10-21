@@ -13,7 +13,6 @@ def get_nominees(force_download=False):
 
     nominees_file = "data/nominees.json"
     if not force_download and os.path.exists(nominees_file):
-        print(f"'{nominees_file}' already exists. Skipping download.")
         with open(nominees_file, "r") as f:
             NOMINEES_DATA = json.load(f)
             return NOMINEES_DATA
@@ -32,7 +31,6 @@ def get_nominees(force_download=False):
 def get_nominee_info(nominee_id, force_download=False):
     nominee_file = f"data/nominees/{nominee_id}.json"
     if not force_download and os.path.exists(nominee_file):
-        print(f"'{nominee_file}' already exists. Skipping download.")
         with open(nominee_file, "r") as f:
             return json.load(f)
 
@@ -63,7 +61,7 @@ def get_nominee_info(nominee_id, force_download=False):
     os.makedirs(os.path.dirname(nominee_file), exist_ok=True)
     with open(nominee_file, "w") as f:
         json.dump(nominee_info, f, indent=4)
-    print(f"Nominee data downloaded and saved to {nominee_file}")
+    print(f"Nominee info downloaded and saved to {nominee_file}")
 
     return nominee_info
 

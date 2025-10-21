@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import re
 import os
 import sys
-from get_nominees import get_nominees
+from get_nominees import get_nominees, get_nominee_info
 from get_feedback import save_html_feedback_for_nominee
 
 def parse_feedback(nominee_id, force_download=False):
@@ -59,6 +59,10 @@ def parse_feedback(nominee_id, force_download=False):
 
     result = {}
     result["feedback"] = feedback_data
+
+    # Get nominee info and add it to the result dictionary
+    nominee_info = get_nominee_info(nominee_id, force_download=force_download)
+    result["nominee_info"] = nominee_info
 
     output_dir = "data/feedback_json"
     if not os.path.exists(output_dir):

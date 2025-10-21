@@ -25,11 +25,10 @@ def save_html_feedback_for_nominee(nominee_id, force_download=False):
     session_id = get_session_id()
     output_file = f"data/feedback_html/{nominee_id}.html"
     if not force_download and os.path.exists(output_file):
-        print(f"Feedback for nominee {nominee_id} already exists. Skipping download.")
         return
 
     url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/nominee/{nominee_id}"
-    print(f"Downloading feedback for nominee {nominee_id} from {url}")
+    print(f"Downloading HTML feedback for nominee {nominee_id} from {url}")
     response = requests.get(url, cookies={"sessionid": session_id})
     response.raise_for_status()
 
@@ -37,7 +36,7 @@ def save_html_feedback_for_nominee(nominee_id, force_download=False):
         os.makedirs("data/feedback_html")
     with open(output_file, "w") as f:
         f.write(response.text)
-    print(f"Saved feedback for nominee {nominee_id} to {output_file}")
+    print(f"Saved HTML feedback for nominee {nominee_id} to {output_file}")
 
 
 def save_all_html_feedback(force_download=False):
