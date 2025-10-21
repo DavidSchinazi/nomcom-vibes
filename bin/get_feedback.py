@@ -20,8 +20,9 @@ def get_session_id():
             session_id_file.write_text(SESSION_ID)
     return SESSION_ID
 
-def save_html_feedback_for_nominee(nominee_id, session_id, force_download=False):
+def save_html_feedback_for_nominee(nominee_id, force_download=False):
     """Downloads and saves the HTML feedback for a single nominee."""
+    session_id = get_session_id()
     output_file = f"data/feedback_html/{nominee_id}.html"
     if not force_download and os.path.exists(output_file):
         print(f"Feedback for nominee {nominee_id} already exists. Skipping download.")
@@ -31,6 +32,9 @@ def save_html_feedback_for_nominee(nominee_id, session_id, force_download=False)
     print(f"Downloading feedback for nominee {nominee_id} from {url}")
     response = requests.get(url, cookies={"sessionid": session_id})
     response.raise_for_status()
+
+    if not os.path.exists("data/feedback_html"):
+        os.makedirs("data/feedback_html")
     with open(output_file, "w") as f:
         f.write(response.text)
     print(f"Saved feedback for nominee {nominee_id} to {output_file}")
@@ -38,15 +42,11 @@ def save_html_feedback_for_nominee(nominee_id, session_id, force_download=False)
 
 def save_all_html_feedback(force_download=False):
     """Saves HTML feedback for all nominees."""
-    session_id = get_session_id()
     nominees_data = get_nominees(force_download=force_download)
-
-    if not os.path.exists("data/feedback_html"):
-        os.makedirs("data/feedback_html")
 
     for nominee in nominees_data["objects"]:
         nominee_id = nominee["id"]
-        save_html_feedback_for_nominee(nominee_id, session_id, force_download=force_download)
+        save_html_feedback_for_nominee(nominee_id, force_download=force_download)
 
 
 if __name__ == "__main__":
