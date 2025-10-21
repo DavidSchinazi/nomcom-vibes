@@ -29,8 +29,51 @@ def get_nominees(force_download=False):
     NOMINEES_DATA = nominees_data
     return NOMINEES_DATA
 
+def get_nominee_info(nominee_id):
+    nominee_file = f"data/nominees/{nominee_id}.json"
+    if os.path.exists(nominee_file):
+        print(f"'{nominee_file}' already exists. Skipping download.")
+        with open(nominee_file, "r") as f:
+            return json.load(f)
+
+    get_nominees()
+    nominee = None
+    for obj in NOMINEES_DATA['objects']:
+        if str(obj['id']) == str(nominee_id):
+            nominee = obj
+            break
+    if not nominee:
+        raise Exception(f'Nominee with id {nominee_id} not found')
+
+    email_path = nominee['email']
+    url = f'https://datatracker.ietf.org{email_path}'
+    response = requests.get(url)
+    response.raise_for_status()
+    email_data = response.json()
+    person_path = email_data['person']
+
+    url = f'https://datatracker.ietf.org{person_path}'
+    response = requests.get(url)
+    response.raise_for_status()
+    nominee_info = response.json()
+
+    nominee_info['nominee_id'] = nominee_id
+    nominee_info['email'] = email_data['address']
+
+    os.makedirs(os.path.dirname(nominee_file), exist_ok=True)
+    with open(nominee_file, "w") as f:
+        json.dump(nominee_info, f, indent=4)
+    print(f"Nominee data downloaded and saved to {nominee_file}")
+
+    return nominee_info
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
+    parser.add_argument("--nominee_id", help="Get info about a specific nominee")
     args = parser.parse_args()
-    get_nominees(force_download=args.force)
+
+    if args.nominee_id:
+        print(json.dumps(get_nominee_info(args.nominee_id), indent=4))
+    else:
+        get_nominees(force_download=args.force)
