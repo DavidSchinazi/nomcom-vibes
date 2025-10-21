@@ -14,7 +14,19 @@ def get_session_id():
         session_id_file.write_text(session_id)
         return session_id
 
-def get_feedback():
+def save_html_feedback_for_nominee(nominee_id, session_id):
+    """Downloads and saves the HTML feedback for a single nominee."""
+    url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/nominee/{nominee_id}"
+    print(f"Downloading feedback for nominee {nominee_id} from {url}")
+    response = requests.get(url, cookies={"sessionid": session_id})
+    response.raise_for_status()
+    with open(f"data/feedback_html/{nominee_id}.html", "w") as f:
+        f.write(response.text)
+    print(f"Saved feedback for nominee {nominee_id} to feedback_html/{nominee_id}.html")
+
+
+def save_all_html_feedback():
+    """Saves HTML feedback for all nominees."""
     session_id = get_session_id()
     with open("data/nominees.json", "r") as f:
         nominees_data = json.load(f)
@@ -24,13 +36,10 @@ def get_feedback():
 
     for nominee in nominees_data["objects"]:
         nominee_id = nominee["id"]
-        url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/nominee/{nominee_id}"
-        print(f"Downloading feedback for nominee {nominee_id} from {url}")
-        response = requests.get(url, cookies={"sessionid": session_id})
-        response.raise_for_status()
-        with open(f"data/feedback_html/{nominee_id}.html", "w") as f:
-            f.write(response.text)
-        print(f"Saved feedback for nominee {nominee_id} to feedback_html/{nominee_id}.html")
+        save_html_feedback_for_nominee(nominee_id, session_id)
+
 
 if __name__ == "__main__":
-    get_feedback()
+    save_all_html_feedback()
+
+
