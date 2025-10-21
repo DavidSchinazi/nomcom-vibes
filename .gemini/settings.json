@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allowed_tools": [
+      "python3",
+      "ls",
+      "grep",
+      "edit",
+      "curl"
+    ]
+  }
+}
