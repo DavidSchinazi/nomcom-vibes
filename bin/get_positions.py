@@ -8,7 +8,7 @@ POSITIONS_DATA = None
 
 def get_positions(force_download=False):
     global POSITIONS_DATA
-    if POSITIONS_DATA and not force_download:
+    if POSITIONS_DATA:
         return POSITIONS_DATA
 
     positions_file = "data/positions.json"

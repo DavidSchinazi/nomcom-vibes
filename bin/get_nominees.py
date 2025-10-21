@@ -8,7 +8,7 @@ NOMINEES_DATA = None
 
 def get_nominees(force_download=False):
     global NOMINEES_DATA
-    if NOMINEES_DATA and not force_download:
+    if NOMINEES_DATA:
         return NOMINEES_DATA
 
     nominees_file = "data/nominees.json"
