@@ -3,6 +3,7 @@ import requests
 import json
 import os
 from pathlib import Path
+from get_nominees import get_nominees
 
 def get_session_id():
     session_id_file = Path("data/session_id.txt")
@@ -25,11 +26,10 @@ def save_html_feedback_for_nominee(nominee_id, session_id):
     print(f"Saved feedback for nominee {nominee_id} to feedback_html/{nominee_id}.html")
 
 
-def save_all_html_feedback():
+def save_all_html_feedback(force_download=False):
     """Saves HTML feedback for all nominees."""
     session_id = get_session_id()
-    with open("data/nominees.json", "r") as f:
-        nominees_data = json.load(f)
+    nominees_data = get_nominees(force_download=force_download)
 
     if not os.path.exists("data/feedback_html"):
         os.makedirs("data/feedback_html")
@@ -41,5 +41,3 @@ def save_all_html_feedback():
 
 if __name__ == "__main__":
     save_all_html_feedback()
-
-
