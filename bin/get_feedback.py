@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import requests
 import json
 import os
@@ -49,4 +50,7 @@ def save_all_html_feedback(force_download=False):
 
 
 if __name__ == "__main__":
-    save_all_html_feedback()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
+    args = parser.parse_args()
+    save_all_html_feedback(force_download=args.force)

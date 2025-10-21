@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import requests
 import json
 import os
@@ -29,4 +30,7 @@ def get_nominees(force_download=False):
     return NOMINEES_DATA
 
 if __name__ == "__main__":
-    get_nominees()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
+    args = parser.parse_args()
+    get_nominees(force_download=args.force)

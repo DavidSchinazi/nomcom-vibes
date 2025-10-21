@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import requests
 import json
 import os
@@ -29,4 +30,7 @@ def get_positions(force_download=False):
     return POSITIONS_DATA
 
 if __name__ == "__main__":
-    get_positions()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
+    args = parser.parse_args()
+    get_positions(force_download=args.force)
