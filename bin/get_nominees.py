@@ -29,9 +29,9 @@ def get_nominees(force_download=False):
     NOMINEES_DATA = nominees_data
     return NOMINEES_DATA
 
-def get_nominee_info(nominee_id):
+def get_nominee_info(nominee_id, force_download=False):
     nominee_file = f"data/nominees/{nominee_id}.json"
-    if os.path.exists(nominee_file):
+    if not force_download and os.path.exists(nominee_file):
         print(f"'{nominee_file}' already exists. Skipping download.")
         with open(nominee_file, "r") as f:
             return json.load(f)
@@ -74,6 +74,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.nominee_id:
-        print(json.dumps(get_nominee_info(args.nominee_id), indent=4))
+        print(json.dumps(get_nominee_info(args.nominee_id, force_download=args.force), indent=4))
     else:
         get_nominees(force_download=args.force)
