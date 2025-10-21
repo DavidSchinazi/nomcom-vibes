@@ -2,4 +2,4 @@
 
 ## Coding Style
 * Always add hashbang to all python files
-* Make sure all python files have a newline at the end
+* Make sure all python files have exactly one newline at the end
