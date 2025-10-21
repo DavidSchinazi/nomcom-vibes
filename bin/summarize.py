@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import argparse
 import re
 import os
@@ -97,6 +98,6 @@ def run_summarization(file_to_summarize=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Summarize feedback using Gemini.')
-    parser.add_argument('--file', help='Optional: Specify a single JSON file to summarize (e.g., 123.json).')
+    parser.add_argument('input_file', help='Optional: Specify a single JSON file to summarize (e.g., 123.json).')
     args = parser.parse_args()
-    run_summarization(args.file)
+    run_summarization(args.input_file)
