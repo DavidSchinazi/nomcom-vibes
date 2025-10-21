@@ -57,6 +57,7 @@ def get_nominee_info(nominee_id, force_download=False):
 
     nominee_info['nominee_id'] = nominee_id
     nominee_info['email'] = email_data['address']
+    nominee_info['nominee_position'] = nominee['nominee_position']
 
     os.makedirs(os.path.dirname(nominee_file), exist_ok=True)
     with open(nominee_file, "w") as f:
