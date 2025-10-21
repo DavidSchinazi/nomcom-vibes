@@ -74,4 +74,11 @@ def parse_all_feedback():
         parse_feedback(nominee_id)
 
 if __name__ == "__main__":
-    parse_all_feedback()
+    parser = argparse.ArgumentParser(description='Parse feedback from HTML files.')
+    parser.add_argument('nominee_id', nargs='?', help='Optional: The nominee ID to parse feedback for.')
+    args = parser.parse_args()
+
+    if args.nominee_id:
+        parse_feedback(args.nominee_id)
+    else:
+        parse_all_feedback()
