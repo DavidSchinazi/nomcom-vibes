@@ -27,7 +27,7 @@ def get_summary(feedback_text, use_pro_model=False):
         api_key = get_api_key()
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro-latest' if use_pro_model else 'gemini-flash-latest')
-        response = model.generate_content(f"Summarize the following feedback. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML.:\n\n{feedback_text}")
+        response = model.generate_content(f"Summarize the following feedback. If there are differeing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML.:\n\n{feedback_text}")
         summary_text = response.text
         # Extract HTML from markdown code block if present
         match = re.search(r"<[a-zA-Z][^>]*>.*</[a-zA-Z][^>]*>", summary_text, re.DOTALL)
@@ -80,7 +80,17 @@ def process_feedback_and_create_summary(input_file, output_dir):
             feedback_by_position[position].append(item)
 
     for position, feedback_list in feedback_by_position.items():
-        feedback_text = "\n".join([item.get("feedback", "") for item in feedback_list if "subject" not in item])
+        feedback_text = ""
+        for item in feedback_list:
+            if "subject" in item:
+                # Skip self feedback.
+                continue
+            if "feedback" not in item or "name" not in item:
+                print(f"Missing information when parsing {input_file} for position '{position}': {item}")
+                continue
+            author = item["name"]
+            contents = item["feedback"]
+            feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
         summary = get_summary(feedback_text)
 
         base_filename = os.path.splitext(os.path.basename(input_file))[0]
