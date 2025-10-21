@@ -52,9 +52,12 @@ def parse_feedback(input_file, output_file):
             if data:
                 feedback_data.append(data)
 
+    result = {}
+    result["feedback"] = feedback_data
+
     # Write the extracted data to a JSON file
     with open(output_file, "w") as json_file:
-        json.dump(feedback_data, json_file, indent=4)
+        json.dump(result, json_file, indent=4)
 
     print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")
 

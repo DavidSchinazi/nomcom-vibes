@@ -46,20 +46,30 @@ def create_html_summary(summary, feedback_data, output_file):
     feedback_with_subject = [item for item in feedback_data if "subject" in item]
     feedback_without_subject = [item for item in feedback_data if "subject" not in item]
 
+    # TODO: right now this is incorrectly taking the name and position of
+    # the first entry in the file. We need to instead get it from
+    # nominees.json when parsing the HTML.
+    nominee_name = feedback_data[0].get("name", "Unknown Nominee") if feedback_data else "Unknown Nominee"
+    position = feedback_data[0].get("position", "Unknown Position") if feedback_data else "Unknown Position"
+
     with open(output_file, "w") as f:
         f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
-        f.write("<h1>Summary</h1>\n")
+        f.write("<h1>Summary for {} ({}):</h1>\n".format(nominee_name, position))
         f.write(summary)
-        f.write("<h1>All Feedback</h1>\n")
+        f.write("<h1>All Feedback for {} ({}):</h1>\n".format(nominee_name, position))
         for feedback in feedback_without_subject:
             f.write("<hr>\n")
             for key, value in feedback.items():
+                if key == "position":
+                    continue
                 f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
         if feedback_with_subject:
             f.write("<h2>Self Feedback</h2>\n")
         for feedback in feedback_with_subject:
             f.write("<hr>\n")
             for key, value in feedback.items():
+                if key == "position":
+                    continue
                 f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
         f.write("</body>\n</html>")
 
@@ -69,8 +79,9 @@ def sanitize_filename(name):
 
 def process_feedback_and_create_summary(input_file, output_dir):
     with open(input_file, "r") as f:
-        feedback_data = json.load(f)
+        feedback_dict = json.load(f)
 
+    feedback_data = feedback_dict["feedback"]
     feedback_by_position = {}
     for item in feedback_data:
         position = item.get("position")
