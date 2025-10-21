@@ -5,15 +5,19 @@ import os
 from pathlib import Path
 from get_nominees import get_nominees
 
+SESSION_ID = None
+
 def get_session_id():
-    session_id_file = Path("data/session_id.txt")
-    if session_id_file.exists():
-        return session_id_file.read_text().strip()
-    else:
-        session_id = input("Please enter your IETF Datatracker session ID: ")
-        session_id_file.parent.mkdir(exist_ok=True)
-        session_id_file.write_text(session_id)
-        return session_id
+    global SESSION_ID
+    if not SESSION_ID:
+        session_id_file = Path("data/session_id.txt")
+        if session_id_file.exists():
+            SESSION_ID = session_id_file.read_text().strip()
+        else:
+            SESSION_ID = input("Please enter your IETF Datatracker session ID: ")
+            session_id_file.parent.mkdir(exist_ok=True)
+            session_id_file.write_text(SESSION_ID)
+    return SESSION_ID
 
 def save_html_feedback_for_nominee(nominee_id, session_id, force_download=False):
     """Downloads and saves the HTML feedback for a single nominee."""
