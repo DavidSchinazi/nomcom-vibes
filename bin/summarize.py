@@ -70,10 +70,21 @@ def process_feedback_and_create_summary(nominee_id):
             contents = item["feedback"]
             feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
 
-        if not feedback_text.strip():
+        summary_filename = f"{nominee_id}_{position}.txt"
+        summary_dir = "data/ai_summaries"
+        if not os.path.exists(summary_dir):
+            os.makedirs(summary_dir)
+        summary_file = os.path.join(summary_dir, summary_filename)
+
+        if os.path.exists(summary_file):
+            with open(summary_file, "r") as f:
+                summary = f.read()
+        elif not feedback_text.strip():
             summary = "<p>No feedback to summarize for this position.</p>"
         else:
             summary = get_summary(feedback_text)
+            with open(summary_file, "w") as f:
+                f.write(summary)
 
         output_filename = f"{nominee_id}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
