@@ -41,16 +41,10 @@ def get_summary(feedback_text, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
 
-def create_html_summary(summary, feedback_data, output_file):
+def create_html_summary(summary, feedback_data, output_file, nominee_name, position):
     """Creates an HTML file with the summary and feedback."""
     feedback_with_subject = [item for item in feedback_data if "subject" in item]
     feedback_without_subject = [item for item in feedback_data if "subject" not in item]
-
-    # TODO: right now this is incorrectly taking the name and position of
-    # the first entry in the file. We need to instead get it from
-    # nominees.json when parsing the HTML.
-    nominee_name = feedback_data[0].get("name", "Unknown Nominee") if feedback_data else "Unknown Nominee"
-    position = feedback_data[0].get("position", "Unknown Position") if feedback_data else "Unknown Position"
 
     with open(output_file, "w") as f:
         f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
@@ -60,16 +54,12 @@ def create_html_summary(summary, feedback_data, output_file):
         for feedback in feedback_without_subject:
             f.write("<hr>\n")
             for key, value in feedback.items():
-                if key == "position":
-                    continue
                 f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
         if feedback_with_subject:
             f.write("<h2>Self Feedback</h2>\n")
         for feedback in feedback_with_subject:
             f.write("<hr>\n")
             for key, value in feedback.items():
-                if key == "position":
-                    continue
                 f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
         f.write("</body>\n</html>")
 
@@ -81,16 +71,13 @@ def process_feedback_and_create_summary(input_file, output_dir):
     with open(input_file, "r") as f:
         feedback_dict = json.load(f)
 
-    feedback_data = feedback_dict["feedback"]
-    feedback_by_position = {}
-    for item in feedback_data:
-        position = item.get("position")
-        if position:
-            if position not in feedback_by_position:
-                feedback_by_position[position] = []
-            feedback_by_position[position].append(item)
+    nominee_info = feedback_dict.get("nominee_info", {})
+    nominee_name = nominee_info.get("name", "Unknown Nominee")
+    feedback_by_position = feedback_dict.get("feedback", {})
 
     for position, feedback_list in feedback_by_position.items():
+        if position is None:
+            position = "Unknown"
         feedback_text = ""
         for item in feedback_list:
             if "subject" in item:
@@ -102,14 +89,18 @@ def process_feedback_and_create_summary(input_file, output_dir):
             author = item["name"]
             contents = item["feedback"]
             feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
-        summary = get_summary(feedback_text)
+
+        if not feedback_text.strip():
+            summary = "<p>No feedback to summarize for this position.</p>"
+        else:
+            summary = get_summary(feedback_text)
 
         base_filename = os.path.splitext(os.path.basename(input_file))[0]
         sanitized_position = sanitize_filename(position)
         output_filename = f"{base_filename}_{sanitized_position}.html"
         output_file = os.path.join(output_dir, output_filename)
 
-        create_html_summary(summary, feedback_list, output_file)
+        create_html_summary(summary, feedback_list, output_file, nominee_name, position)
         print(f"Successfully summarized {input_file} for position '{position}' and saved to {output_file}")
 
 def run_summarization(file_to_summarize=None):
