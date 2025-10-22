@@ -42,8 +42,9 @@ def get_summary(feedback_text, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
 
-def process_feedback_and_create_summary(input_file):
+def process_feedback_and_create_summary(nominee_id):
     output_dir = "data/summaries"
+    input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -74,29 +75,22 @@ def process_feedback_and_create_summary(input_file):
         else:
             summary = get_summary(feedback_text)
 
-        base_filename = os.path.splitext(os.path.basename(input_file))[0]
-        output_filename = f"{base_filename}_{position}.html"
+        output_filename = f"{nominee_id}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
 
         create_html_summary(summary, feedback_list, input_file, output_file, nominee_name, position)
 
-def run_summarization(file_to_summarize=None):
-    input_dir = "data/feedback_json"
-
-    if file_to_summarize:
-        input_file = os.path.join(input_dir, file_to_summarize)
-        if not os.path.exists(input_file):
-            print(f"Error: File {input_file} not found.")
-        else:
-            process_feedback_and_create_summary(input_file)
+def run_summarization(nominee_id, force_download=False):
+    if nominee_id:
+        process_feedback_and_create_summary(nominee_id)
     else:
-        for filename in os.listdir(input_dir):
-            if filename.endswith(".json"):
-                input_file = os.path.join(input_dir, filename)
-                process_feedback_and_create_summary(input_file)
+        nominees_data = get_nominees(force_download=force_download)
+        for nominee in nominees_data["objects"]:
+            process_feedback_and_create_summary(nominee["id"])
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Summarize feedback using Gemini.')
-    parser.add_argument('input_file', nargs='?', help='Optional: Specify a single JSON file to summarize (e.g., 123.json).')
+    parser.add_argument('nominee_id', nargs='?', help='Optional: Specify a single nominee ID to summarize (e.g., 123).')
+    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
     args = parser.parse_args()
-    run_summarization(args.input_file)
+    run_summarization(args.nominee_id, force_download=args.force)
