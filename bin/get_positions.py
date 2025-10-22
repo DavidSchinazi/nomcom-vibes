@@ -6,6 +6,22 @@ import os
 
 POSITIONS_DATA = None
 
+POSITION_SHORT_NAMES = {
+    "Applications and Real Time (ART) AD": "ART",
+    "Internet Architecture Board, Member": "IAB",
+    "IETF LLC Board, Director": "LLC",
+    "IETF Trust, Trustee": "Trust",
+    "IETF Chair / GEN AD": "GEN",
+    "Internet (INT) AD": "INT",
+    "Operations and Management (OPS) AD": "OPS",
+    "Routing (RTG) AD": "RTG",
+    "Security (SEC) AD": "SEC",
+    "Web and Internet Transport (WIT) AD": "WIT"
+}
+
+def get_position_short_name(name):
+    return POSITION_SHORT_NAMES[name]
+
 def get_positions(force_download=False):
     global POSITIONS_DATA
     if POSITIONS_DATA:
