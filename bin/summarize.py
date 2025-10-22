@@ -28,7 +28,7 @@ def get_summary(feedback_text, use_pro_model=False):
         api_key = get_api_key()
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro-latest' if use_pro_model else 'gemini-flash-latest')
-        response = model.generate_content(f"Summarize the following feedback. If there are differeing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML.:\n\n{feedback_text}")
+        response = model.generate_content(f"Summarize the following feedback. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML.:\n\n{feedback_text}")
         summary_text = response.text
         # Extract HTML from markdown code block if present
         match = re.search(r"<[a-zA-Z][^>]*>.*</[a-zA-Z][^>]*>", summary_text, re.DOTALL)
