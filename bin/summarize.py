@@ -67,10 +67,6 @@ def create_html_summary(summary, feedback_data, input_file, output_file, nominee
         f.write("</body>\n</html>")
     print(f"Successfully summarized {input_file} for position '{position}' and saved to {output_file}")
 
-def sanitize_filename(name):
-    """Sanitizes a string to be used as a valid filename."""
-    return re.sub(r'[^a-zA-Z0-9_\.-]', '_', name)
-
 def process_feedback_and_create_summary(input_file, output_dir):
     with open(input_file, "r") as f:
         feedback_dict = json.load(f)
@@ -100,8 +96,7 @@ def process_feedback_and_create_summary(input_file, output_dir):
             summary = get_summary(feedback_text)
 
         base_filename = os.path.splitext(os.path.basename(input_file))[0]
-        sanitized_position = sanitize_filename(position)
-        output_filename = f"{base_filename}_{sanitized_position}.html"
+        output_filename = f"{base_filename}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
 
         create_html_summary(summary, feedback_list, input_file, output_file, nominee_name, position)
