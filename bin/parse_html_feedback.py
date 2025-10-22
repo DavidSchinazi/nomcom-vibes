@@ -6,6 +6,7 @@ import re
 import os
 import sys
 from get_nominees import get_nominees, get_nominee_info
+from get_positions import get_position_short_name
 from get_feedback import save_html_feedback_for_nominee
 
 def parse_feedback(nominee_id, force_download=False):
@@ -46,7 +47,7 @@ def parse_feedback(nominee_id, force_download=False):
                     elif "Date" in dt_text:
                         data["date"] = dd_text
                     elif "Positions" in dt_text:
-                        data["position"] = dd_text
+                        data["position"] = get_position_short_name(dd_text)
                     elif "Feedback" in dt_text:
                         pre_tag = dd.find("pre")
                         if pre_tag:
