@@ -41,10 +41,13 @@ def get_summary(feedback_text, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
 
-def create_html_summary(summary, feedback_data, output_file, nominee_name, position):
+def create_html_summary(summary, feedback_data, input_file, output_file, nominee_name, position):
     """Creates an HTML file with the summary and feedback."""
     feedback_with_subject = [item for item in feedback_data if "subject" in item]
     feedback_without_subject = [item for item in feedback_data if "subject" not in item]
+
+    if not feedback_without_subject:
+        return
 
     with open(output_file, "w") as f:
         f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
@@ -62,6 +65,7 @@ def create_html_summary(summary, feedback_data, output_file, nominee_name, posit
             for key, value in feedback.items():
                 f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
         f.write("</body>\n</html>")
+    print(f"Successfully summarized {input_file} for position '{position}' and saved to {output_file}")
 
 def sanitize_filename(name):
     """Sanitizes a string to be used as a valid filename."""
@@ -100,8 +104,7 @@ def process_feedback_and_create_summary(input_file, output_dir):
         output_filename = f"{base_filename}_{sanitized_position}.html"
         output_file = os.path.join(output_dir, output_filename)
 
-        create_html_summary(summary, feedback_list, output_file, nominee_name, position)
-        print(f"Successfully summarized {input_file} for position '{position}' and saved to {output_file}")
+        create_html_summary(summary, feedback_list, input_file, output_file, nominee_name, position)
 
 def run_summarization(file_to_summarize=None):
     input_dir = "data/feedback_json"
