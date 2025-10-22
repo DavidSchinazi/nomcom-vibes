@@ -23,7 +23,7 @@ def parse_feedback(nominee_id, force_download=False):
     # Find the active tab pane which contains the feedback comments
     comment_tab_pane = soup.find("div", {"id": "comment", "role": "tabpanel", "class": "tab-pane active"})
 
-    feedback_data = []
+    feedback_data = {}
 
     if comment_tab_pane:
         # Find all feedback entries within the comment tab pane
@@ -56,7 +56,10 @@ def parse_feedback(nominee_id, force_download=False):
                         data["subject"] = dd_text
             
             if data:
-                feedback_data.append(data)
+                position = data.pop("position", None)
+                if position not in feedback_data:
+                    feedback_data[position] = []
+                feedback_data[position].append(data)
 
     result = {}
     result["feedback"] = feedback_data
