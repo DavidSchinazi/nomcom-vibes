@@ -42,7 +42,11 @@ def get_summary(feedback_text, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
 
-def process_feedback_and_create_summary(input_file, output_dir):
+def process_feedback_and_create_summary(input_file):
+    output_dir = "data/summaries"
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     with open(input_file, "r") as f:
         feedback_dict = json.load(f)
 
@@ -78,22 +82,18 @@ def process_feedback_and_create_summary(input_file, output_dir):
 
 def run_summarization(file_to_summarize=None):
     input_dir = "data/feedback_json"
-    output_dir = "data/summaries"
-
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
     if file_to_summarize:
         input_file = os.path.join(input_dir, file_to_summarize)
         if not os.path.exists(input_file):
             print(f"Error: File {input_file} not found.")
         else:
-            process_feedback_and_create_summary(input_file, output_dir)
+            process_feedback_and_create_summary(input_file)
     else:
         for filename in os.listdir(input_dir):
             if filename.endswith(".json"):
                 input_file = os.path.join(input_dir, filename)
-                process_feedback_and_create_summary(input_file, output_dir)
+                process_feedback_and_create_summary(input_file)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Summarize feedback using Gemini.')
