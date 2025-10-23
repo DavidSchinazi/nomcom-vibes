@@ -122,6 +122,22 @@ def get_nominee_positions(force_download=False):
     NOMINEE_POSITIONS_DATA = nominee_positions_data
     return NOMINEE_POSITIONS_DATA
 
+def get_active_nominees(force_download=False):
+    nominees = get_nominees(force_download=force_download)
+    active_nominees = {}
+    for nominee in nominees['objects']:
+        nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
+        if not nominee_info['positions']:
+            continue
+        all_declined = True
+        for state in nominee_info['positions'].values():
+            if state != 'declined':
+                all_declined = False
+                break
+        if not all_declined:
+            active_nominees[nominee['id']] = nominee_info
+    return active_nominees
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
