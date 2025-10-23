@@ -134,12 +134,12 @@ def get_active_nominees(force_download=False):
         nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
         if not nominee_info['positions']:
             continue
-        all_declined = True
+        has_accepted = False
         for state in nominee_info['positions'].values():
-            if state != 'declined':
-                all_declined = False
+            if state == 'accepted':
+                has_accepted = True
                 break
-        if not all_declined:
+        if has_accepted:
             active_nominees.append(nominee)
 
     ACTIVE_NOMINEES_DATA = active_nominees
