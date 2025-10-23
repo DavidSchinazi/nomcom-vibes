@@ -32,7 +32,7 @@ def create_html_summary(summary, feedback_data, input_file, output_file, nominee
         f.write("</body>\n</html>")
     print(f"Successfully summarized {input_file} for position '{position}' and saved to {output_file}")
 
-def create_summary_for_nominee(nominee_id, force_download=False, force_parse=False):
+def create_summary_for_nominee(nominee_id, force_download=False, force_parse=False, force_summarize=False):
     output_dir = "data/summaries"
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
 
@@ -46,25 +46,26 @@ def create_summary_for_nominee(nominee_id, force_download=False, force_parse=Fal
     feedback_by_position = feedback_dict.get("feedback", {})
 
     for position, feedback_list in feedback_by_position.items():
-        summary = get_summary_for_nominee_and_position(nominee_id, position, force_download=force_download, force_parse=force_parse)
+        summary = get_summary_for_nominee_and_position(nominee_id, position, force_download=force_download, force_parse=force_parse, force_summarize=force_summarize)
 
         output_filename = f"{nominee_id}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
 
         create_html_summary(summary, feedback_list, input_file, output_file, nominee_name, position)
 
-def run_formatting(nominee_id=None, force_download=False, force_parse=False):
+def run_formatting(nominee_id=None, force_download=False, force_parse=False, force_summarize=False):
     if nominee_id:
-        create_summary_for_nominee(nominee_id, force_download=force_download, force_parse=force_parse)
+        create_summary_for_nominee(nominee_id, force_download=force_download, force_parse=force_parse, force_summarize=force_summarize)
     else:
         nominees_data = get_nominees(force_download=force_download)
         for nominee in nominees_data["objects"]:
-            create_summary_for_nominee(nominee["id"], force_download=force_download, force_parse=force_parse)
+            create_summary_for_nominee(nominee["id"], force_download=force_download, force_parse=force_parse, force_summarize=force_summarize)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Format feedback summaries.')
     parser.add_argument('nominee_id', nargs='?', help='Optional: Specify a single nominee ID to format (e.g., 123).')
     parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
+    parser.add_argument("-s", "--force-summarize", action="store_true", help="Force summarization even if summary file exists")
     args = parser.parse_args()
-    run_formatting(args.nominee_id, force_download=args.force_download, force_parse=args.force_parse)
+    run_formatting(args.nominee_id, force_download=args.force_download, force_parse=args.force_parse, force_summarize=args.force_summarize)
