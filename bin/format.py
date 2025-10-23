@@ -26,16 +26,16 @@ def create_html_summary(summary, feedback_data, input_file, output_file, nominee
 
     with open(output_file, "w") as f:
         f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
-        f.write("<h1>Summary for {} ({}):</h1>\n".format(nominee_name, position))
+        f.write(f"<h1>AI Summary for {nominee_name} for {position}:</h1>\n")
         f.write(summary)
-        f.write("<h1>All Feedback for {} ({}):</h1>\n".format(nominee_name, position))
+        f.write("<h1>Actual Feedback:</h1>\n")
         _write_feedback(f, feedback_without_subject)
 
         if feedback_with_subject:
             f.write("<h2>Self Feedback</h2>\n")
             _write_feedback(f, feedback_with_subject)
         f.write("</body>\n</html>")
-    print(f"Successfully summarized {input_file} for position '{position}' and saved to {output_file}")
+    print(f"Successfully summarized {input_file} for {position} and saved to {output_file}")
 
 def create_summary_for_nominee(nominee_id, force_download=False, force_parse=False, force_summarize=False):
     output_dir = "data/summaries"
