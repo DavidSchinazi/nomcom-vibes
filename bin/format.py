@@ -10,22 +10,11 @@ def _write_feedback(f, feedback_list):
     """Writes a list of feedback items to the file."""
     for feedback in feedback_list:
         f.write("<hr>\n")
-        name = feedback.get("name", "Anonymous")
-        email = feedback.get("email")
-        date = feedback.get("date")
-        if email:
-            if date:
-                f.write(f'<b>Name:</b> <a href="https://datatracker.ietf.org/person/{email}"><span title="{date}">{name}</span></a><br>\n')
-            else:
-                f.write(f'<b>Name:</b> <a href="https://datatracker.ietf.org/person/{email}">{name}</a><br>\n')
-        else:
-            if date:
-                f.write(f'<b>Name:</b> <span title="{date}">{name}</span><br>\n')
-            else:
-                f.write(f"<b>Name:</b> {name}<br>\n")
-        for key, value in feedback.items():
-            if key not in ["name", "email", "date"]:
-                f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
+        name = feedback["name"]
+        email = feedback["email"]
+        date = feedback["date"]
+        contents = feedback["feedback"]
+        f.write(f'<span title="{date}"><a href="https://datatracker.ietf.org/person/{email}"><b>{name}</b></a></span>: {contents}\n')
 
 def create_html_summary(summary, feedback_data, input_file, output_file, nominee_name, position):
     """Creates an HTML file with the summary and feedback."""
