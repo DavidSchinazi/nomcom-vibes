@@ -31,7 +31,7 @@ def get_positions(force_download=False):
     if not force_download and os.path.exists(positions_file):
         print(f"'{positions_file}' already exists. Skipping download.")
         with open(positions_file, "r") as f:
-            POSITIONS_DATA = json.load(f)
+            POSITIONS_DATA = json.load(f)['objects']
             return POSITIONS_DATA
 
     url = "https://datatracker.ietf.org/api/v1/nomcom/position/?nomcom=16&limit=1000"

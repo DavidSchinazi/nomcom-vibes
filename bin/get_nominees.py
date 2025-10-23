@@ -17,7 +17,7 @@ def get_nominees(force_download=False):
     nominees_file = "data/nominees.json"
     if not force_download and os.path.exists(nominees_file):
         with open(nominees_file, "r") as f:
-            NOMINEES_DATA = json.load(f)
+            NOMINEES_DATA = json.load(f)['objects']
             return NOMINEES_DATA
 
     url = "https://datatracker.ietf.org/api/v1/nomcom/nominee/?nomcom=16&limit=1000"
@@ -28,7 +28,7 @@ def get_nominees(force_download=False):
     with open(nominees_file, "w") as f:
         json.dump(nominees_data, f, indent=4)
     print(f"Nominees data downloaded and saved to {nominees_file}")
-    NOMINEES_DATA = nominees_data
+    NOMINEES_DATA = nominees_data['objects']
     return NOMINEES_DATA
 
 def get_nominee_info(nominee_id, force_download=False):
@@ -39,7 +39,7 @@ def get_nominee_info(nominee_id, force_download=False):
 
     get_nominees()
     nominee = None
-    for obj in NOMINEES_DATA['objects']:
+    for obj in NOMINEES_DATA:
         if str(obj['id']) == str(nominee_id):
             nominee = obj
             break
@@ -71,7 +71,7 @@ def get_nominee_info(nominee_id, force_download=False):
     for r in nominee['nominee_position']:
         short_name = get_position_short_name(get_position_name(r, force_download=force_download))
         state = 'unknown'
-        for np in nominee_positions_data['objects']:
+        for np in nominee_positions_data:
             if np['nominee'] == nominee['resource_uri'] and np['position'] == r:
                 state = np['state'].split('/')[-2]
                 break
@@ -89,7 +89,7 @@ def print_meetings_attended(force_download=False):
     """Prints each nominee and the number of IETF meetings they have attended, sorted in descending order."""
     nominees_data = get_nominees(force_download=force_download)
     nominee_meetings = []
-    for nominee in nominees_data['objects']:
+    for nominee in nominees_data:
         nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
         name = nominee_info['name']
         meetings_attended = nominee_info['num_meetings_attended']
@@ -99,7 +99,7 @@ def print_meetings_attended(force_download=False):
     max_name_len = max(len(item['name']) for item in nominee_meetings)
     for item in nominee_meetings:
         print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings")
-    print("We have a total of {} nominees.".format(len(nominees_data['objects'])))
+    print("We have a total of {} nominees.".format(len(nominees_data)))
 
 def get_nominee_positions(force_download=False):
     global NOMINEE_POSITIONS_DATA
@@ -109,7 +109,7 @@ def get_nominee_positions(force_download=False):
     nominee_positions_file = "data/nominee_positions.json"
     if not force_download and os.path.exists(nominee_positions_file):
         with open(nominee_positions_file, "r") as f:
-            NOMINEE_POSITIONS_DATA = json.load(f)
+            NOMINEE_POSITIONS_DATA = json.load(f)['objects']
             return NOMINEE_POSITIONS_DATA
 
     url = "https://datatracker.ietf.org/api/v1/nomcom/nomineeposition/?limit=4000"
@@ -120,7 +120,7 @@ def get_nominee_positions(force_download=False):
     with open(nominee_positions_file, "w") as f:
         json.dump(nominee_positions_data, f, indent=4)
     print(f"Nominee positions data downloaded and saved to {nominee_positions_file}")
-    NOMINEE_POSITIONS_DATA = nominee_positions_data
+    NOMINEE_POSITIONS_DATA = nominee_positions_data['objects']
     return NOMINEE_POSITIONS_DATA
 
 def get_active_nominees(force_download=False):
@@ -130,7 +130,7 @@ def get_active_nominees(force_download=False):
 
     nominees = get_nominees(force_download=force_download)
     active_nominees = {}
-    for nominee in nominees['objects']:
+    for nominee in nominees:
         nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
         if not nominee_info['positions']:
             continue
@@ -158,6 +158,5 @@ if __name__ == "__main__":
     elif args.nominee_id:
         print(json.dumps(get_nominee_info(args.nominee_id, force_download=args.force_download), indent=4))
     else:
-        nominees = get_nominees(force_download=args.force_download)
-        for nominee in nominees['objects']:
+        for nominee in get_nominees(force_download=args.force_download):
             get_nominee_info(nominee['id'], force_download=args.force_download)

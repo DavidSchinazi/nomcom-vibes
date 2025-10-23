@@ -84,10 +84,8 @@ def parse_feedback(nominee_id, force_download=False, force_parse=False):
     return result
 
 def parse_all_feedback(force_download=False, force_parse=False):
-    nominees_data = get_nominees(force_download=force_download)
-    for nominee in nominees_data["objects"]:
-        nominee_id = nominee["id"]
-        parse_feedback(nominee_id, force_download=force_download, force_parse=force_parse)
+    for nominee in get_nominees(force_download=force_download):
+        parse_feedback(nominee["id"], force_download=force_download, force_parse=force_parse)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse feedback from HTML files.')

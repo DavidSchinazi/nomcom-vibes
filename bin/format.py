@@ -63,8 +63,7 @@ def run_formatting(nominee_id=None, force_download=False, force_parse=False, for
     if nominee_id:
         create_summary_for_nominee(nominee_id, force_download=force_download, force_parse=force_parse, force_summarize=force_summarize)
     else:
-        nominees_data = get_nominees(force_download=force_download)
-        for nominee in nominees_data["objects"]:
+        for nominee in get_nominees(force_download=force_download):
             create_summary_for_nominee(nominee["id"], force_download=force_download, force_parse=force_parse, force_summarize=force_summarize)
 
 if __name__ == "__main__":

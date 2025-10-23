@@ -41,11 +41,8 @@ def save_html_feedback_for_nominee(nominee_id, force_download=False):
 
 def save_all_html_feedback(force_download=False):
     """Saves HTML feedback for all nominees."""
-    nominees_data = get_nominees(force_download=force_download)
-
-    for nominee in nominees_data["objects"]:
-        nominee_id = nominee["id"]
-        save_html_feedback_for_nominee(nominee_id, force_download=force_download)
+    for nominee in get_nominees(force_download=force_download):
+        save_html_feedback_for_nominee(nominee["id"], force_download=force_download)
 
 
 if __name__ == "__main__":
