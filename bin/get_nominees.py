@@ -86,7 +86,7 @@ def print_meetings_attended(force_download=False):
     nominee_meetings.sort(key=lambda x: x['meetings'], reverse=True)
     max_name_len = max(len(item['name']) for item in nominee_meetings)
     for item in nominee_meetings:
-        print(f"{item['name']:<{max_name_len}}  {item['meetings']:>3} meetings attended")
+        print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
