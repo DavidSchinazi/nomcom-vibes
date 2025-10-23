@@ -50,6 +50,6 @@ def save_all_html_feedback(force_download=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
     args = parser.parse_args()
-    save_all_html_feedback(force_download=args.force)
+    save_all_html_feedback(force_download=args.force_download)

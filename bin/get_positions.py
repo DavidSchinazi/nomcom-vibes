@@ -55,6 +55,6 @@ def get_position_name(resource_uri, force_download=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
     args = parser.parse_args()
-    get_positions(force_download=args.force)
+    get_positions(force_download=args.force_download)

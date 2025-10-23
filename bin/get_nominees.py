@@ -69,11 +69,11 @@ def get_nominee_info(nominee_id, force_download=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
     parser.add_argument("--nominee_id", help="Get info about a specific nominee")
     args = parser.parse_args()
 
     if args.nominee_id:
-        print(json.dumps(get_nominee_info(args.nominee_id, force_download=args.force), indent=4))
+        print(json.dumps(get_nominee_info(args.nominee_id, force_download=args.force_download), indent=4))
     else:
-        get_nominees(force_download=args.force)
+        get_nominees(force_download=args.force_download)

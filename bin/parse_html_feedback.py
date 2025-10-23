@@ -9,10 +9,15 @@ from get_nominees import get_nominees, get_nominee_info
 from get_positions import get_position_short_name
 from get_feedback import save_html_feedback_for_nominee
 
-def parse_feedback(nominee_id, force_download=False):
+def parse_feedback(nominee_id, force_download=False, force_parse=False):
     save_html_feedback_for_nominee(nominee_id, force_download=force_download)
     input_file = f"data/feedback_html/{nominee_id}.html"
     output_file = f"data/feedback_json/{nominee_id}.json"
+    if os.path.exists(output_file) and not force_parse:
+        with open(output_file, "r") as json_file:
+            result = json.load(json_file)
+        return result
+
     # Read the HTML file
     with open(input_file, "r") as f:
         html_content = f.read()
@@ -78,19 +83,20 @@ def parse_feedback(nominee_id, force_download=False):
 
     return result
 
-def parse_all_feedback(force_download=False):
+def parse_all_feedback(force_download=False, force_parse=False):
     nominees_data = get_nominees(force_download=force_download)
     for nominee in nominees_data["objects"]:
         nominee_id = nominee["id"]
-        parse_feedback(nominee_id, force_download=force_download)
+        parse_feedback(nominee_id, force_download=force_download, force_parse=force_parse)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse feedback from HTML files.')
     parser.add_argument('nominee_id', nargs='?', help='Optional: The nominee ID to parse feedback for.')
-    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
     args = parser.parse_args()
 
     if args.nominee_id:
-        parse_feedback(args.nominee_id, force_download=args.force)
+        parse_feedback(args.nominee_id, force_download=args.force_download, force_parse=args.force_parse)
     else:
-        parse_all_feedback(force_download=args.force)
+        parse_all_feedback(force_download=args.force_download, force_parse=args.force_parse)

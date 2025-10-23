@@ -25,7 +25,7 @@ def get_summary(feedback_text, use_pro_model=False):
         api_key = get_api_key()
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro-latest' if use_pro_model else 'gemini-flash-latest')
-        response = model.generate_content(f"Summarize the following feedback. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML.:\n\n{feedback_text}")
+        response = model.generate_content(f"Summarize the following feedback. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML:\n\n{feedback_text}")
         summary_text = response.text
         # Extract HTML from markdown code block if present
         match = re.search(r"<[a-zA-Z][^>]*>.*</[a-zA-Z][^>]*>", summary_text, re.DOTALL)
@@ -39,9 +39,9 @@ def get_summary(feedback_text, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
 
-def get_summary_for_nominee_and_position(nominee_id, position, force_download=False):
+def get_summary_for_nominee_and_position(nominee_id, position, force_download=False, force_parse=False):
     """Gets the summary for a given nominee and position."""
-    feedback_dict = parse_feedback(nominee_id, force_download=force_download)
+    feedback_dict = parse_feedback(nominee_id, force_download=force_download, force_parse=force_parse)
 
     feedback_by_position = feedback_dict.get("feedback", {})
     feedback_list = feedback_by_position.get(position, [])
@@ -74,3 +74,15 @@ def get_summary_for_nominee_and_position(nominee_id, position, force_download=Fa
         with open(summary_file, "w") as f:
             f.write(summary)
     return summary
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='Summarize feedback for a nominee and position.')
+    parser.add_argument('nominee_id', help='The ID of the nominee.')
+    parser.add_argument('position', help='The position for which to summarize feedback.')
+    parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
+    args = parser.parse_args()
+
+    summary = get_summary_for_nominee_and_position(args.nominee_id, args.position, force_download=args.force_download, force_parse=args.force_parse)
+    print(summary)
