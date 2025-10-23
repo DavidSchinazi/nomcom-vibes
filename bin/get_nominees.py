@@ -87,7 +87,7 @@ def get_nominee_info(nominee_id, force_download=False):
 
 def print_meetings_attended(force_download=False):
     """Prints each nominee and the number of IETF meetings they have attended, sorted in descending order."""
-    nominees_data = get_nominees(force_download=force_download)
+    nominees_data = get_active_nominees(force_download=force_download)
     nominee_meetings = []
     for nominee in nominees_data:
         nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
@@ -129,7 +129,7 @@ def get_active_nominees(force_download=False):
         return ACTIVE_NOMINEES_DATA
 
     nominees = get_nominees(force_download=force_download)
-    active_nominees = {}
+    active_nominees = []
     for nominee in nominees:
         nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
         if not nominee_info['positions']:
@@ -140,7 +140,7 @@ def get_active_nominees(force_download=False):
                 all_declined = False
                 break
         if not all_declined:
-            active_nominees[nominee['id']] = nominee_info
+            active_nominees.append(nominee)
 
     ACTIVE_NOMINEES_DATA = active_nominees
     return active_nominees
