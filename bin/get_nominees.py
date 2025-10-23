@@ -6,6 +6,8 @@ import os
 from get_positions import get_position_name, get_position_short_name
 
 NOMINEES_DATA = None
+NOMINEE_POSITIONS_DATA = None
+ACTIVE_NOMINEES_DATA = None
 
 def get_nominees(force_download=False):
     global NOMINEES_DATA
@@ -98,8 +100,6 @@ def print_meetings_attended(force_download=False):
     for item in nominee_meetings:
         print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings")
 
-NOMINEE_POSITIONS_DATA = None
-
 def get_nominee_positions(force_download=False):
     global NOMINEE_POSITIONS_DATA
     if NOMINEE_POSITIONS_DATA:
@@ -123,6 +123,10 @@ def get_nominee_positions(force_download=False):
     return NOMINEE_POSITIONS_DATA
 
 def get_active_nominees(force_download=False):
+    global ACTIVE_NOMINEES_DATA
+    if ACTIVE_NOMINEES_DATA:
+        return ACTIVE_NOMINEES_DATA
+
     nominees = get_nominees(force_download=force_download)
     active_nominees = {}
     for nominee in nominees['objects']:
@@ -136,6 +140,8 @@ def get_active_nominees(force_download=False):
                 break
         if not all_declined:
             active_nominees[nominee['id']] = nominee_info
+
+    ACTIVE_NOMINEES_DATA = active_nominees
     return active_nominees
 
 
