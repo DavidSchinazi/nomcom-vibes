@@ -93,17 +93,18 @@ def get_nominee_info(nominee_id, force_download=False):
 def print_meetings_attended(force_download=False):
     """Prints each nominee and the number of IETF meetings they have attended, sorted in descending order."""
     nominees_data = get_active_nominees(force_download=force_download)
-    nominee_meetings = []
+    nominee_stats = []
     for nominee in nominees_data:
         nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
         name = nominee_info['name']
         meetings_attended = nominee_info['num_meetings_attended']
-        nominee_meetings.append({'name': name, 'meetings': meetings_attended})
+        num_drafts = nominee_info['num_drafts']
+        nominee_stats.append({'name': name, 'meetings': meetings_attended, 'drafts': num_drafts})
 
-    nominee_meetings.sort(key=lambda x: x['meetings'], reverse=True)
-    max_name_len = max(len(item['name']) for item in nominee_meetings)
-    for item in nominee_meetings:
-        print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings")
+    nominee_stats.sort(key=lambda x: x['meetings'] + x['drafts'], reverse=True)
+    max_name_len = max(len(item['name']) for item in nominee_stats)
+    for item in nominee_stats:
+        print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings, {item['drafts']:>3} drafts")
     print("We have a total of {} nominees.".format(len(nominees_data)))
 
 def get_nominee_positions(force_download=False):
