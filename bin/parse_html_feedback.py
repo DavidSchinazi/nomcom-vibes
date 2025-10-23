@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import re
 import os
 import sys
-from get_nominees import get_nominees, get_nominee_info
+from get_nominees import get_active_nominees, get_nominee_info
 from get_positions import get_position_short_name
 from get_feedback import save_html_feedback_for_nominee
 
@@ -84,7 +84,7 @@ def parse_feedback(nominee_id, force_download=False, force_parse=False):
     return result
 
 def parse_all_feedback(force_download=False, force_parse=False):
-    for nominee in get_nominees(force_download=force_download):
+    for nominee in get_active_nominees(force_download=force_download):
         parse_feedback(nominee["id"], force_download=force_download, force_parse=force_parse)
 
 if __name__ == "__main__":

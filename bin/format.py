@@ -3,7 +3,7 @@
 import argparse
 import os
 import json
-from get_nominees import get_nominees
+from get_nominees import get_active_nominees
 from summarize import get_summary_for_nominee_and_position
 
 def _write_feedback(f, feedback_list):
@@ -63,7 +63,7 @@ def run_formatting(nominee_id=None, force_download=False, force_parse=False, for
     if nominee_id:
         create_summary_for_nominee(nominee_id, force_download=force_download, force_parse=force_parse, force_summarize=force_summarize)
     else:
-        for nominee in get_nominees(force_download=force_download):
+        for nominee in get_active_nominees(force_download=force_download):
             create_summary_for_nominee(nominee["id"], force_download=force_download, force_parse=force_parse, force_summarize=force_summarize)
 
 if __name__ == "__main__":

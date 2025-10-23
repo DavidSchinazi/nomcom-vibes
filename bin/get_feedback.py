@@ -4,7 +4,7 @@ import requests
 import json
 import os
 from pathlib import Path
-from get_nominees import get_nominees
+from get_nominees import get_active_nominees
 
 SESSION_ID = None
 
@@ -41,7 +41,7 @@ def save_html_feedback_for_nominee(nominee_id, force_download=False):
 
 def save_all_html_feedback(force_download=False):
     """Saves HTML feedback for all nominees."""
-    for nominee in get_nominees(force_download=force_download):
+    for nominee in get_active_nominees(force_download=force_download):
         save_html_feedback_for_nominee(nominee["id"], force_download=force_download)
 
 

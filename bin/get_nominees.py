@@ -37,9 +37,8 @@ def get_nominee_info(nominee_id, force_download=False):
         with open(nominee_file, "r") as f:
             return json.load(f)
 
-    get_nominees()
     nominee = None
-    for obj in NOMINEES_DATA:
+    for obj in get_nominees(force_download=force_download):
         if str(obj['id']) == str(nominee_id):
             nominee = obj
             break
