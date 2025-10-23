@@ -56,6 +56,12 @@ def get_nominee_info(nominee_id, force_download=False):
     response.raise_for_status()
     nominee_info = response.json()
 
+    url = f'https://datatracker.ietf.org/api/v1/meeting/attended/?person={nominee_info["id"]}&limit=1'
+    response = requests.get(url)
+    response.raise_for_status()
+    attended_data = response.json()
+    nominee_info['num_meetings_attended'] = attended_data['meta']['total_count']
+
     nominee_info['nominee_id'] = nominee_id
     nominee_info['email'] = email_data['address']
     nominee_info['positions'] = [get_position_short_name(get_position_name(r, force_download=force_download)) for r in nominee['nominee_position']]
