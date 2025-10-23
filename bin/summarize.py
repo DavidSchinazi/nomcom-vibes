@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 
-import argparse
 import re
 import os
 import json
 import google.generativeai as genai
 from pathlib import Path
-from format import create_html_summary
-
-# --- Configuration ---
 
 # --- Functions ---
 def get_api_key():
@@ -42,66 +38,40 @@ def get_summary(feedback_text, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
 
-def process_feedback_and_create_summary(nominee_id):
-    output_dir = "data/summaries"
+def get_summary_for_nominee_and_position(nominee_id, position):
+    """Gets the summary for a given nominee and position."""
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
-
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
     with open(input_file, "r") as f:
         feedback_dict = json.load(f)
 
-    nominee_info = feedback_dict.get("nominee_info", {})
-    nominee_name = nominee_info.get("name", "Unknown Nominee")
     feedback_by_position = feedback_dict.get("feedback", {})
+    feedback_list = feedback_by_position.get(position, [])
 
-    for position, feedback_list in feedback_by_position.items():
-        if position is None:
-            position = "Unknown"
-        feedback_text = ""
-        for item in feedback_list:
-            if "subject" in item:
-                # Skip self feedback.
-                continue
-            if "feedback" not in item or "name" not in item:
-                print(f"Missing information when parsing {input_file} for position '{position}': {item}")
-                continue
-            author = item["name"]
-            contents = item["feedback"]
-            feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
+    feedback_text = ""
+    for item in feedback_list:
+        if "subject" in item:
+            # Skip self feedback.
+            continue
+        if "feedback" not in item or "name" not in item:
+            print(f"Missing information when parsing {input_file} for position '{position}': {item}")
+            continue
+        author = item["name"]
+        contents = item["feedback"]
+        feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
 
-        summary_filename = f"{nominee_id}_{position}.txt"
-        summary_dir = "data/ai_summaries"
-        if not os.path.exists(summary_dir):
-            os.makedirs(summary_dir)
-        summary_file = os.path.join(summary_dir, summary_filename)
+    summary_filename = f"{nominee_id}_{position}.txt"
+    summary_dir = "data/ai_summaries"
+    if not os.path.exists(summary_dir):
+        os.makedirs(summary_dir)
+    summary_file = os.path.join(summary_dir, summary_filename)
 
-        if os.path.exists(summary_file):
-            with open(summary_file, "r") as f:
-                summary = f.read()
-        elif not feedback_text.strip():
-            summary = "<p>No feedback to summarize for this position.</p>"
-        else:
-            summary = get_summary(feedback_text)
-            with open(summary_file, "w") as f:
-                f.write(summary)
-
-        output_filename = f"{nominee_id}_{position}.html"
-        output_file = os.path.join(output_dir, output_filename)
-
-        create_html_summary(summary, feedback_list, input_file, output_file, nominee_name, position)
-
-def run_summarization(nominee_id, force_download=False):
-    if nominee_id:
-        process_feedback_and_create_summary(nominee_id)
+    if os.path.exists(summary_file):
+        with open(summary_file, "r") as f:
+            summary = f.read()
+    elif not feedback_text.strip():
+        summary = "<p>No feedback to summarize for this position.</p>"
     else:
-        nominees_data = get_nominees(force_download=force_download)
-        for nominee in nominees_data["objects"]:
-            process_feedback_and_create_summary(nominee["id"])
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Summarize feedback using Gemini.')
-    parser.add_argument('nominee_id', nargs='?', help='Optional: Specify a single nominee ID to summarize (e.g., 123).')
-    parser.add_argument("-f", "--force", action="store_true", help="Force download even if file exists")
-    args = parser.parse_args()
-    run_summarization(args.nominee_id, force_download=args.force)
+        summary = get_summary(feedback_text)
+        with open(summary_file, "w") as f:
+            f.write(summary)
+    return summary
