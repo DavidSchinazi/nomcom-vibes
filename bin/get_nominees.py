@@ -73,13 +73,31 @@ def get_nominee_info(nominee_id, force_download=False):
 
     return nominee_info
 
+def print_meetings_attended(force_download=False):
+    """Prints each nominee and the number of IETF meetings they have attended, sorted in descending order."""
+    nominees_data = get_nominees(force_download=force_download)
+    nominee_meetings = []
+    for nominee in nominees_data['objects']:
+        nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
+        name = nominee_info['name']
+        meetings_attended = nominee_info['num_meetings_attended']
+        nominee_meetings.append({'name': name, 'meetings': meetings_attended})
+
+    nominee_meetings.sort(key=lambda x: x['meetings'], reverse=True)
+    max_name_len = max(len(item['name']) for item in nominee_meetings)
+    for item in nominee_meetings:
+        print(f"{item['name']:<{max_name_len}}  {item['meetings']:>3} meetings attended")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-m", "--meetings-attended", action="store_true", help="Print number of meetings attended by each nominee, sorted.")
     parser.add_argument("nominee_id", nargs='?', help="Get info about a specific nominee")
     args = parser.parse_args()
 
-    if args.nominee_id:
+    if args.meetings_attended:
+        print_meetings_attended(force_download=args.force_download)
+    elif args.nominee_id:
         print(json.dumps(get_nominee_info(args.nominee_id, force_download=args.force_download), indent=4))
     else:
         nominees = get_nominees(force_download=args.force_download)
