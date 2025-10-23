@@ -99,6 +99,7 @@ def print_meetings_attended(force_download=False):
     max_name_len = max(len(item['name']) for item in nominee_meetings)
     for item in nominee_meetings:
         print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings")
+    print("We have a total of {} nominees.".format(len(nominees_data['objects'])))
 
 def get_nominee_positions(force_download=False):
     global NOMINEE_POSITIONS_DATA
