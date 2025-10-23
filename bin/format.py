@@ -6,6 +6,20 @@ import json
 from get_nominees import get_nominees
 from summarize import get_summary_for_nominee_and_position
 
+def _write_feedback(f, feedback_list):
+    """Writes a list of feedback items to the file."""
+    for feedback in feedback_list:
+        f.write("<hr>\n")
+        name = feedback.get("name", "Anonymous")
+        email = feedback.get("email")
+        if email:
+            f.write(f'<b>Name:</b> <a href="https://datatracker.ietf.org/person/{email}">{name}</a><br>\n')
+        else:
+            f.write(f"<b>Name:</b> {name}<br>\n")
+        for key, value in feedback.items():
+            if key not in ["name", "email"]:
+                f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
+
 def create_html_summary(summary, feedback_data, input_file, output_file, nominee_name, position):
     """Creates an HTML file with the summary and feedback."""
     feedback_with_subject = [item for item in feedback_data if "subject" in item]
@@ -19,31 +33,11 @@ def create_html_summary(summary, feedback_data, input_file, output_file, nominee
         f.write("<h1>Summary for {} ({}):</h1>\n".format(nominee_name, position))
         f.write(summary)
         f.write("<h1>All Feedback for {} ({}):</h1>\n".format(nominee_name, position))
-        for feedback in feedback_without_subject:
-            f.write("<hr>\n")
-            name = feedback.get("name", "Anonymous")
-            email = feedback.get("email")
-            if email:
-                f.write(f'<b>Name:</b> <a href="https://datatracker.ietf.org/person/{email}">{name}</a><br>\n')
-            else:
-                f.write(f"<b>Name:</b> {name}<br>\n")
-            for key, value in feedback.items():
-                if key not in ["name", "email"]:
-                    f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
+        _write_feedback(f, feedback_without_subject)
 
         if feedback_with_subject:
             f.write("<h2>Self Feedback</h2>\n")
-        for feedback in feedback_with_subject:
-            f.write("<hr>\n")
-            name = feedback.get("name", "Anonymous")
-            email = feedback.get("email")
-            if email:
-                f.write(f'<b>Name:</b> <a href="https://datatracker.ietf.org/person/{email}">{name}</a><br>\n')
-            else:
-                f.write(f"<b>Name:</b> {name}<br>\n")
-            for key, value in feedback.items():
-                if key not in ["name", "email"]:
-                    f.write(f"<b>{key.capitalize()}:</b> {value}<br>\n")
+            _write_feedback(f, feedback_with_subject)
         f.write("</body>\n</html>")
     print(f"Successfully summarized {input_file} for position '{position}' and saved to {output_file}")
 
