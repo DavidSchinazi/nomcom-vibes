@@ -5,6 +5,7 @@ import os
 import json
 import google.generativeai as genai
 from pathlib import Path
+from parse_html_feedback import parse_feedback
 
 # --- Functions ---
 def get_api_key():
@@ -38,11 +39,9 @@ def get_summary(feedback_text, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
 
-def get_summary_for_nominee_and_position(nominee_id, position):
+def get_summary_for_nominee_and_position(nominee_id, position, force_download=False):
     """Gets the summary for a given nominee and position."""
-    input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
-    with open(input_file, "r") as f:
-        feedback_dict = json.load(f)
+    feedback_dict = parse_feedback(nominee_id, force_download=force_download)
 
     feedback_by_position = feedback_dict.get("feedback", {})
     feedback_list = feedback_by_position.get(position, [])
@@ -53,7 +52,7 @@ def get_summary_for_nominee_and_position(nominee_id, position):
             # Skip self feedback.
             continue
         if "feedback" not in item or "name" not in item:
-            print(f"Missing information when parsing {input_file} for position '{position}': {item}")
+            print(f"Missing information when parsing feedback for nominee {nominee_id} for position '{position}': {item}")
             continue
         author = item["name"]
         contents = item["feedback"]

@@ -32,7 +32,7 @@ def create_html_summary(summary, feedback_data, input_file, output_file, nominee
         f.write("</body>\n</html>")
     print(f"Successfully summarized {input_file} for position '{position}' and saved to {output_file}")
 
-def create_summary_for_nominee(nominee_id):
+def create_summary_for_nominee(nominee_id, force_download=False):
     output_dir = "data/summaries"
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
 
@@ -46,7 +46,7 @@ def create_summary_for_nominee(nominee_id):
     feedback_by_position = feedback_dict.get("feedback", {})
 
     for position, feedback_list in feedback_by_position.items():
-        summary = get_summary_for_nominee_and_position(nominee_id, position)
+        summary = get_summary_for_nominee_and_position(nominee_id, position, force_download=force_download)
 
         output_filename = f"{nominee_id}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
@@ -55,11 +55,11 @@ def create_summary_for_nominee(nominee_id):
 
 def run_formatting(nominee_id=None, force_download=False):
     if nominee_id:
-        create_summary_for_nominee(nominee_id)
+        create_summary_for_nominee(nominee_id, force_download=force_download)
     else:
         nominees_data = get_nominees(force_download=force_download)
         for nominee in nominees_data["objects"]:
-            create_summary_for_nominee(nominee["id"])
+            create_summary_for_nominee(nominee["id"], force_download=force_download)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Format feedback summaries.')

@@ -74,8 +74,9 @@ def parse_feedback(nominee_id, force_download=False):
     # Write the extracted data to a JSON file
     with open(output_file, "w") as json_file:
         json.dump(result, json_file, indent=4)
-
     print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")
+
+    return result
 
 def parse_all_feedback(force_download=False):
     nominees_data = get_nominees(force_download=force_download)
