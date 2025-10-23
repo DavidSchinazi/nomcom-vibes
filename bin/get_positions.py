@@ -42,12 +42,12 @@ def get_positions(force_download=False):
     with open(positions_file, "w") as f:
         json.dump(positions_data, f, indent=4)
     print(f"Positions data downloaded and saved to {positions_file}")
-    POSITIONS_DATA = positions_data
+    POSITIONS_DATA = positions_data['objects']
     return POSITIONS_DATA
 
 def get_position_name(resource_uri, force_download=False):
     positions = get_positions(force_download=force_download)
-    for position in positions['objects']:
+    for position in positions:
         if position['resource_uri'] == resource_uri:
             return position['name']
     return None
