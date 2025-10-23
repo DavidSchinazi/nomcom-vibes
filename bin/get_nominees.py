@@ -64,7 +64,17 @@ def get_nominee_info(nominee_id, force_download=False):
 
     nominee_info['nominee_id'] = nominee_id
     nominee_info['email'] = email_data['address']
-    nominee_info['positions'] = [get_position_short_name(get_position_name(r, force_download=force_download)) for r in nominee['nominee_position']]
+    nominee_positions_data = get_nominee_positions(force_download=force_download)
+    positions = {}
+    for r in nominee['nominee_position']:
+        short_name = get_position_short_name(get_position_name(r, force_download=force_download))
+        state = 'unknown'
+        for np in nominee_positions_data['objects']:
+            if np['nominee'] == nominee['resource_uri'] and np['position'] == r:
+                state = np['state'].split('/')[-2]
+                break
+        positions[short_name] = state
+    nominee_info['positions'] = positions
 
     os.makedirs(os.path.dirname(nominee_file), exist_ok=True)
     with open(nominee_file, "w") as f:
