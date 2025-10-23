@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 from format import run_formatting
 
 if __name__ == "__main__":
