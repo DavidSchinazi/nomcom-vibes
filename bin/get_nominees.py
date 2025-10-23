@@ -88,6 +88,31 @@ def print_meetings_attended(force_download=False):
     for item in nominee_meetings:
         print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings")
 
+NOMINEE_POSITIONS_DATA = None
+
+def get_nominee_positions(force_download=False):
+    global NOMINEE_POSITIONS_DATA
+    if NOMINEE_POSITIONS_DATA:
+        return NOMINEE_POSITIONS_DATA
+
+    nominee_positions_file = "data/nominee_positions.json"
+    if not force_download and os.path.exists(nominee_positions_file):
+        with open(nominee_positions_file, "r") as f:
+            NOMINEE_POSITIONS_DATA = json.load(f)
+            return NOMINEE_POSITIONS_DATA
+
+    url = "https://datatracker.ietf.org/api/v1/nomcom/nomineeposition/?limit=4000"
+    response = requests.get(url)
+    response.raise_for_status()  # Raise an exception for HTTP errors
+    nominee_positions_data = response.json()
+
+    with open(nominee_positions_file, "w") as f:
+        json.dump(nominee_positions_data, f, indent=4)
+    print(f"Nominee positions data downloaded and saved to {nominee_positions_file}")
+    NOMINEE_POSITIONS_DATA = nominee_positions_data
+    return NOMINEE_POSITIONS_DATA
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
