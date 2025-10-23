@@ -16,13 +16,16 @@ def _write_feedback(f, feedback_list):
         contents = feedback["feedback"]
         f.write(f'<span title="{date}"><a href="https://datatracker.ietf.org/person/{email}"><b>{name}</b></a></span>: {contents}\n')
 
-def create_html_summary(summary, feedback_data, input_file, output_file, nominee_name, position):
+def create_html_summary(summary, feedback_data, input_file, output_file, feedback_dict, position):
     """Creates an HTML file with the summary and feedback."""
     feedback_with_subject = [item for item in feedback_data if "subject" in item]
     feedback_without_subject = [item for item in feedback_data if "subject" not in item]
 
     if not feedback_without_subject:
         return
+
+    nominee_info = feedback_dict["nominee_info"]
+    nominee_name = nominee_info["name"]
 
     with open(output_file, "w") as f:
         f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
@@ -46,8 +49,6 @@ def create_summary_for_nominee(nominee_id, force_download=False, force_parse=Fal
     with open(input_file, "r") as f:
         feedback_dict = json.load(f)
 
-    nominee_info = feedback_dict.get("nominee_info", {})
-    nominee_name = nominee_info.get("name", "Unknown Nominee")
     feedback_by_position = feedback_dict.get("feedback", {})
 
     for position, feedback_list in feedback_by_position.items():
@@ -56,7 +57,7 @@ def create_summary_for_nominee(nominee_id, force_download=False, force_parse=Fal
         output_filename = f"{nominee_id}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
 
-        create_html_summary(summary, feedback_list, input_file, output_file, nominee_name, position)
+        create_html_summary(summary, feedback_list, input_file, output_file, feedback_dict, position)
 
 def run_formatting(nominee_id=None, force_download=False, force_parse=False, force_summarize=False):
     if nominee_id:
