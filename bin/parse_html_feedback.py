@@ -7,7 +7,7 @@ import os
 import sys
 from nominees import get_active_nominees, get_nominee_info
 from positions import get_position_short_name
-from get_feedback import save_html_feedback_for_nominee
+from feedback import save_html_feedback_for_nominee
 
 def parse_feedback(nominee_id, force_metadata=False, force_feedback=False, force_parse=False):
     save_html_feedback_for_nominee(nominee_id, force_feedback=force_feedback)
