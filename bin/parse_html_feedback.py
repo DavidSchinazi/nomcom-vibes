@@ -9,8 +9,8 @@ from get_nominees import get_active_nominees, get_nominee_info
 from get_positions import get_position_short_name
 from get_feedback import save_html_feedback_for_nominee
 
-def parse_feedback(nominee_id, force_metadata=False, force_parse=False):
-    save_html_feedback_for_nominee(nominee_id, force_metadata=force_metadata)
+def parse_feedback(nominee_id, force_metadata=False, force_feedback=False, force_parse=False):
+    save_html_feedback_for_nominee(nominee_id, force_feedback=force_feedback)
     input_file = f"data/feedback_html/{nominee_id}.html"
     output_file = f"data/feedback_json/{nominee_id}.json"
     if os.path.exists(output_file) and not force_parse:
@@ -83,18 +83,19 @@ def parse_feedback(nominee_id, force_metadata=False, force_parse=False):
 
     return result
 
-def parse_all_feedback(force_metadata=False, force_parse=False):
+def parse_all_feedback(force_metadata=False, force_feedback=False, force_parse=False):
     for nominee in get_active_nominees(force_metadata=force_metadata):
-        parse_feedback(nominee["id"], force_metadata=force_metadata, force_parse=force_parse)
+        parse_feedback(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse feedback from HTML files.')
     parser.add_argument('nominee_id', nargs='?', help='Optional: The nominee ID to parse feedback for.')
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
+    parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
     args = parser.parse_args()
 
     if args.nominee_id:
-        parse_feedback(args.nominee_id, force_metadata=args.force_metadata, force_parse=args.force_parse)
+        parse_feedback(args.nominee_id, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse)
     else:
-        parse_all_feedback(force_metadata=args.force_metadata, force_parse=args.force_parse)
+        parse_all_feedback(force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse)

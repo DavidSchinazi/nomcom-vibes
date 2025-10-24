@@ -39,9 +39,9 @@ def get_summary(feedback_text, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
 
-def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_parse=False, force_summarize=False):
+def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     """Gets the summary for a given nominee and position."""
-    feedback_dict = parse_feedback(nominee_id, force_metadata=force_metadata, force_parse=force_parse)
+    feedback_dict = parse_feedback(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
 
     feedback_by_position = feedback_dict.get("feedback", {})
     feedback_list = feedback_by_position.get(position, [])
@@ -81,9 +81,10 @@ if __name__ == "__main__":
     parser.add_argument('nominee_id', help='The ID of the nominee.')
     parser.add_argument('position', help='The position for which to summarize feedback.')
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
+    parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
     parser.add_argument("-s", "--force-summarize", action="store_true", help="Force summarization even if summary file exists")
     args = parser.parse_args()
 
-    summary = get_summary_for_nominee_and_position(args.nominee_id, args.position, force_metadata=args.force_metadata, force_parse=args.force_parse, force_summarize=args.force_summarize)
+    summary = get_summary_for_nominee_and_position(args.nominee_id, args.position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
     print(summary)

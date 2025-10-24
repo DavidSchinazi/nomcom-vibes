@@ -20,11 +20,11 @@ def get_session_id():
             session_id_file.write_text(SESSION_ID)
     return SESSION_ID
 
-def save_html_feedback_for_nominee(nominee_id, force_metadata=False):
+def save_html_feedback_for_nominee(nominee_id, force_feedback=False):
     """Downloads and saves the HTML feedback for a single nominee."""
     session_id = get_session_id()
     output_file = f"data/feedback_html/{nominee_id}.html"
-    if not force_metadata and os.path.exists(output_file):
+    if not force_feedback and os.path.exists(output_file):
         return
 
     url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/nominee/{nominee_id}"
@@ -39,10 +39,10 @@ def save_html_feedback_for_nominee(nominee_id, force_metadata=False):
     print(f"Saved HTML feedback for nominee {nominee_id} to {output_file}")
 
 
-def save_all_html_feedback(force_metadata=False):
+def save_all_html_feedback(force_metadata=False, force_feedback=False):
     """Saves HTML feedback for all nominees."""
     for nominee in get_active_nominees(force_metadata=force_metadata):
-        save_html_feedback_for_nominee(nominee["id"], force_metadata=force_metadata)
+        save_html_feedback_for_nominee(nominee["id"], force_feedback=force_feedback)
 
 
 if __name__ == "__main__":

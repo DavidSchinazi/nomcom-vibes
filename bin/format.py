@@ -40,7 +40,7 @@ def create_html_summary(summary, feedback_data, input_file, output_file, feedbac
         f.write("</body>\n</html>")
     print(f"Successfully summarized {input_file} for {position} and saved to {output_file}")
 
-def create_summary_for_nominee(nominee_id, force_metadata=False, force_parse=False, force_summarize=False):
+def create_summary_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     output_dir = "data/summaries"
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
 
@@ -52,25 +52,26 @@ def create_summary_for_nominee(nominee_id, force_metadata=False, force_parse=Fal
     feedback_by_position = feedback_dict.get("feedback", {})
 
     for position, feedback_list in feedback_by_position.items():
-        summary = get_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_parse=force_parse, force_summarize=force_summarize)
+        summary = get_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
 
         output_filename = f"{nominee_id}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
 
         create_html_summary(summary, feedback_list, input_file, output_file, feedback_dict, position)
 
-def run_formatting(nominee_id=None, force_metadata=False, force_parse=False, force_summarize=False):
+def run_formatting(nominee_id=None, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     if nominee_id:
-        create_summary_for_nominee(nominee_id, force_metadata=force_metadata, force_parse=force_parse, force_summarize=force_summarize)
+        create_summary_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
     else:
         for nominee in get_active_nominees(force_metadata=force_metadata):
-            create_summary_for_nominee(nominee["id"], force_metadata=force_metadata, force_parse=force_parse, force_summarize=force_summarize)
+            create_summary_for_nominee(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Format feedback summaries.')
     parser.add_argument('nominee_id', nargs='?', help='Optional: Specify a single nominee ID to format (e.g., 123).')
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
+    parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
     parser.add_argument("-s", "--force-summarize", action="store_true", help="Force summarization even if summary file exists")
     args = parser.parse_args()
-    run_formatting(args.nominee_id, force_metadata=args.force_metadata, force_parse=args.force_parse, force_summarize=args.force_summarize)
+    run_formatting(args.nominee_id, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
