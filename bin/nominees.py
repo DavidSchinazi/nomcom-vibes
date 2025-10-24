@@ -9,7 +9,7 @@ NOMINEES_DATA = None
 NOMINEE_POSITIONS_DATA = None
 ACTIVE_NOMINEES_DATA = None
 
-def get_nominees(force_metadata=False):
+def load_nominees(force_metadata=False):
     global NOMINEES_DATA
     if NOMINEES_DATA:
         return NOMINEES_DATA
@@ -38,7 +38,7 @@ def get_nominee_info(nominee_id, force_metadata=False):
             return json.load(f)
 
     nominee = None
-    for obj in get_nominees(force_metadata=force_metadata):
+    for obj in load_nominees(force_metadata=force_metadata):
         if str(obj['id']) == str(nominee_id):
             nominee = obj
             break
@@ -134,7 +134,7 @@ def get_active_nominees(force_metadata=False):
     if ACTIVE_NOMINEES_DATA:
         return ACTIVE_NOMINEES_DATA
 
-    nominees = get_nominees(force_metadata=force_metadata)
+    nominees = load_nominees(force_metadata=force_metadata)
     active_nominees = []
     for nominee in nominees:
         nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
@@ -164,5 +164,5 @@ if __name__ == "__main__":
     elif args.nominee_id:
         print(json.dumps(get_nominee_info(args.nominee_id, force_metadata=args.force_metadata), indent=4))
     else:
-        for nominee in get_nominees(force_metadata=args.force_metadata):
+        for nominee in load_nominees(force_metadata=args.force_metadata):
             get_nominee_info(nominee['id'], force_metadata=args.force_metadata)

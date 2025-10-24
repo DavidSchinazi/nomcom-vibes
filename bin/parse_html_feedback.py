@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import re
 import os
 import sys
-from get_nominees import get_active_nominees, get_nominee_info
+from nominees import get_active_nominees, get_nominee_info
 from positions import get_position_short_name
 from get_feedback import save_html_feedback_for_nominee
 

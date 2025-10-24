@@ -3,7 +3,7 @@
 import argparse
 import os
 import json
-from get_nominees import get_active_nominees
+from nominees import get_active_nominees
 from summarize import get_summary_for_nominee_and_position
 
 def _write_feedback(f, feedback_list):

@@ -4,7 +4,7 @@ import requests
 import json
 import os
 from pathlib import Path
-from get_nominees import get_active_nominees
+from nominees import get_active_nominees
 
 SESSION_ID = None
 
