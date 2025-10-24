@@ -5,7 +5,7 @@ import os
 import json
 import google.generativeai as genai
 from pathlib import Path
-from parse_html_feedback import parse_feedback
+from feedback_parser import parse_feedback
 
 # --- Functions ---
 def get_api_key():
