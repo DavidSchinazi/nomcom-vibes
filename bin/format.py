@@ -103,11 +103,19 @@ def run_formatting(nominee_id=None, position=None, force_metadata=False, force_f
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Format feedback summaries.')
-    parser.add_argument('nominee_id', nargs='?', help='Optional: Specify a single nominee ID to format (e.g., 123).')
-    parser.add_argument('--position', help='Optional: Specify a single position to format (e.g., iab).')
+    parser.add_argument('identifier', nargs='?', help='Optional: Specify a single nominee ID (e.g., 123) or a position (e.g., iab) to format.')
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
     parser.add_argument("-s", "--force-summarize", action="store_true", help="Force summarization even if summary file exists")
     args = parser.parse_args()
-    run_formatting(args.nominee_id, args.position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
+
+    nominee_id = None
+    position = None
+    if args.identifier:
+        try:
+            nominee_id = int(args.identifier)
+        except ValueError:
+            position = args.identifier
+
+    run_formatting(nominee_id=nominee_id, position=position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
