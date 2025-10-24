@@ -22,13 +22,13 @@ POSITION_SHORT_NAMES = {
 def get_position_short_name(name):
     return POSITION_SHORT_NAMES[name]
 
-def get_positions(force_download=False):
+def get_positions(force_metadata=False):
     global POSITIONS_DATA
     if POSITIONS_DATA:
         return POSITIONS_DATA
 
     positions_file = "data/positions.json"
-    if not force_download and os.path.exists(positions_file):
+    if not force_metadata and os.path.exists(positions_file):
         print(f"'{positions_file}' already exists. Skipping download.")
         with open(positions_file, "r") as f:
             POSITIONS_DATA = json.load(f)['objects']
@@ -45,8 +45,8 @@ def get_positions(force_download=False):
     POSITIONS_DATA = positions_data['objects']
     return POSITIONS_DATA
 
-def get_position_name(resource_uri, force_download=False):
-    positions = get_positions(force_download=force_download)
+def get_position_name(resource_uri, force_metadata=False):
+    positions = get_positions(force_metadata=force_metadata)
     for position in positions:
         if position['resource_uri'] == resource_uri:
             return position['name']
@@ -55,6 +55,6 @@ def get_position_name(resource_uri, force_download=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     args = parser.parse_args()
-    get_positions(force_download=args.force_download)
+    get_positions(force_metadata=args.force_metadata)

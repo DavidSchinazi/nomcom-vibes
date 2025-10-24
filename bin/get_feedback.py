@@ -20,11 +20,11 @@ def get_session_id():
             session_id_file.write_text(SESSION_ID)
     return SESSION_ID
 
-def save_html_feedback_for_nominee(nominee_id, force_download=False):
+def save_html_feedback_for_nominee(nominee_id, force_metadata=False):
     """Downloads and saves the HTML feedback for a single nominee."""
     session_id = get_session_id()
     output_file = f"data/feedback_html/{nominee_id}.html"
-    if not force_download and os.path.exists(output_file):
+    if not force_metadata and os.path.exists(output_file):
         return
 
     url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/nominee/{nominee_id}"
@@ -39,14 +39,14 @@ def save_html_feedback_for_nominee(nominee_id, force_download=False):
     print(f"Saved HTML feedback for nominee {nominee_id} to {output_file}")
 
 
-def save_all_html_feedback(force_download=False):
+def save_all_html_feedback(force_metadata=False):
     """Saves HTML feedback for all nominees."""
-    for nominee in get_active_nominees(force_download=force_download):
-        save_html_feedback_for_nominee(nominee["id"], force_download=force_download)
+    for nominee in get_active_nominees(force_metadata=force_metadata):
+        save_html_feedback_for_nominee(nominee["id"], force_metadata=force_metadata)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     args = parser.parse_args()
-    save_all_html_feedback(force_download=args.force_download)
+    save_all_html_feedback(force_metadata=args.force_metadata)

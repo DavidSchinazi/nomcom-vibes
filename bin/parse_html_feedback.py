@@ -9,8 +9,8 @@ from get_nominees import get_active_nominees, get_nominee_info
 from get_positions import get_position_short_name
 from get_feedback import save_html_feedback_for_nominee
 
-def parse_feedback(nominee_id, force_download=False, force_parse=False):
-    save_html_feedback_for_nominee(nominee_id, force_download=force_download)
+def parse_feedback(nominee_id, force_metadata=False, force_parse=False):
+    save_html_feedback_for_nominee(nominee_id, force_metadata=force_metadata)
     input_file = f"data/feedback_html/{nominee_id}.html"
     output_file = f"data/feedback_json/{nominee_id}.json"
     if os.path.exists(output_file) and not force_parse:
@@ -70,7 +70,7 @@ def parse_feedback(nominee_id, force_download=False, force_parse=False):
     result["feedback"] = feedback_data
 
     # Get nominee info and add it to the result dictionary
-    nominee_info = get_nominee_info(nominee_id, force_download=force_download)
+    nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
     result["nominee_info"] = nominee_info
 
     output_dir = "data/feedback_json"
@@ -83,18 +83,18 @@ def parse_feedback(nominee_id, force_download=False, force_parse=False):
 
     return result
 
-def parse_all_feedback(force_download=False, force_parse=False):
-    for nominee in get_active_nominees(force_download=force_download):
-        parse_feedback(nominee["id"], force_download=force_download, force_parse=force_parse)
+def parse_all_feedback(force_metadata=False, force_parse=False):
+    for nominee in get_active_nominees(force_metadata=force_metadata):
+        parse_feedback(nominee["id"], force_metadata=force_metadata, force_parse=force_parse)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse feedback from HTML files.')
     parser.add_argument('nominee_id', nargs='?', help='Optional: The nominee ID to parse feedback for.')
-    parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
+    parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
     args = parser.parse_args()
 
     if args.nominee_id:
-        parse_feedback(args.nominee_id, force_download=args.force_download, force_parse=args.force_parse)
+        parse_feedback(args.nominee_id, force_metadata=args.force_metadata, force_parse=args.force_parse)
     else:
-        parse_all_feedback(force_download=args.force_download, force_parse=args.force_parse)
+        parse_all_feedback(force_metadata=args.force_metadata, force_parse=args.force_parse)

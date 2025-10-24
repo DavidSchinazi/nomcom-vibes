@@ -9,13 +9,13 @@ NOMINEES_DATA = None
 NOMINEE_POSITIONS_DATA = None
 ACTIVE_NOMINEES_DATA = None
 
-def get_nominees(force_download=False):
+def get_nominees(force_metadata=False):
     global NOMINEES_DATA
     if NOMINEES_DATA:
         return NOMINEES_DATA
 
     nominees_file = "data/nominees.json"
-    if not force_download and os.path.exists(nominees_file):
+    if not force_metadata and os.path.exists(nominees_file):
         with open(nominees_file, "r") as f:
             NOMINEES_DATA = json.load(f)['objects']
             return NOMINEES_DATA
@@ -31,14 +31,14 @@ def get_nominees(force_download=False):
     NOMINEES_DATA = nominees_data['objects']
     return NOMINEES_DATA
 
-def get_nominee_info(nominee_id, force_download=False):
+def get_nominee_info(nominee_id, force_metadata=False):
     nominee_file = f"data/nominees/{nominee_id}.json"
-    if not force_download and os.path.exists(nominee_file):
+    if not force_metadata and os.path.exists(nominee_file):
         with open(nominee_file, "r") as f:
             return json.load(f)
 
     nominee = None
-    for obj in get_nominees(force_download=force_download):
+    for obj in get_nominees(force_metadata=force_metadata):
         if str(obj['id']) == str(nominee_id):
             nominee = obj
             break
@@ -71,10 +71,10 @@ def get_nominee_info(nominee_id, force_download=False):
 
     nominee_info['nominee_id'] = nominee_id
     nominee_info['email'] = email_data['address']
-    nominee_positions_data = get_nominee_positions(force_download=force_download)
+    nominee_positions_data = get_nominee_positions(force_metadata=force_metadata)
     positions = {}
     for r in nominee['nominee_position']:
-        short_name = get_position_short_name(get_position_name(r, force_download=force_download))
+        short_name = get_position_short_name(get_position_name(r, force_metadata=force_metadata))
         state = 'unknown'
         for np in nominee_positions_data:
             if np['nominee'] == nominee['resource_uri'] and np['position'] == r:
@@ -90,12 +90,12 @@ def get_nominee_info(nominee_id, force_download=False):
 
     return nominee_info
 
-def print_meetings_attended(force_download=False):
+def print_nominee_info(force_metadata=False):
     """Prints each nominee and the number of IETF meetings they have attended, sorted in descending order."""
-    nominees_data = get_active_nominees(force_download=force_download)
+    nominees_data = get_active_nominees(force_metadata=force_metadata)
     nominee_stats = []
     for nominee in nominees_data:
-        nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
+        nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
         name = nominee_info['name']
         meetings_attended = nominee_info['num_meetings_attended']
         num_drafts = nominee_info['num_drafts']
@@ -107,13 +107,13 @@ def print_meetings_attended(force_download=False):
         print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings, {item['drafts']:>3} drafts")
     print("We have a total of {} nominees.".format(len(nominees_data)))
 
-def get_nominee_positions(force_download=False):
+def get_nominee_positions(force_metadata=False):
     global NOMINEE_POSITIONS_DATA
     if NOMINEE_POSITIONS_DATA:
         return NOMINEE_POSITIONS_DATA
 
     nominee_positions_file = "data/nominee_positions.json"
-    if not force_download and os.path.exists(nominee_positions_file):
+    if not force_metadata and os.path.exists(nominee_positions_file):
         with open(nominee_positions_file, "r") as f:
             NOMINEE_POSITIONS_DATA = json.load(f)['objects']
             return NOMINEE_POSITIONS_DATA
@@ -129,15 +129,15 @@ def get_nominee_positions(force_download=False):
     NOMINEE_POSITIONS_DATA = nominee_positions_data['objects']
     return NOMINEE_POSITIONS_DATA
 
-def get_active_nominees(force_download=False):
+def get_active_nominees(force_metadata=False):
     global ACTIVE_NOMINEES_DATA
     if ACTIVE_NOMINEES_DATA:
         return ACTIVE_NOMINEES_DATA
 
-    nominees = get_nominees(force_download=force_download)
+    nominees = get_nominees(force_metadata=force_metadata)
     active_nominees = []
     for nominee in nominees:
-        nominee_info = get_nominee_info(nominee['id'], force_download=force_download)
+        nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
         if not nominee_info['positions']:
             continue
         has_accepted = False
@@ -154,15 +154,15 @@ def get_active_nominees(force_download=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--force-download", action="store_true", help="Force download even if file exists")
-    parser.add_argument("-m", "--meetings-attended", action="store_true", help="Print number of meetings attended by each nominee, sorted.")
+    parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
+    parser.add_argument("-i", "--info", action="store_true", help="Print info on each nominee, sorted.")
     parser.add_argument("nominee_id", nargs='?', help="Get info about a specific nominee")
     args = parser.parse_args()
 
-    if args.meetings_attended:
-        print_meetings_attended(force_download=args.force_download)
+    if args.info:
+        print_nominee_info(force_metadata=args.force_metadata)
     elif args.nominee_id:
-        print(json.dumps(get_nominee_info(args.nominee_id, force_download=args.force_download), indent=4))
+        print(json.dumps(get_nominee_info(args.nominee_id, force_metadata=args.force_metadata), indent=4))
     else:
-        for nominee in get_nominees(force_download=args.force_download):
-            get_nominee_info(nominee['id'], force_download=args.force_download)
+        for nominee in get_nominees(force_metadata=args.force_metadata):
+            get_nominee_info(nominee['id'], force_metadata=args.force_metadata)
