@@ -3,7 +3,7 @@ import argparse
 import requests
 import json
 import os
-from get_positions import get_position_name, get_position_short_name
+from positions import get_position_name, get_position_short_name
 
 NOMINEES_DATA = None
 NOMINEE_POSITIONS_DATA = None
