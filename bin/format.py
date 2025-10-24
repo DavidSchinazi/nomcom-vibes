@@ -90,6 +90,26 @@ def create_summary_for_position(position, force_metadata=False):
     print(f"Successfully created summary for position {position} and saved to {output_file}")
 
 
+def create_overall_summary(force_metadata=False):
+    print("Creating overall summary")
+    output_dir = "data/position_summaries"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    positions = get_nominees_by_position(force_metadata=force_metadata).keys()
+    output_file = os.path.join(output_dir, "index.html")
+
+    with open(output_file, "w") as f:
+        f.write("<html>\n<head>\n<title>NomCom Summary</title>\n</head>\n<body>\n")
+        f.write("<h1>Positions:</h1>\n")
+        f.write("<ul>\n")
+        for position in positions:
+            f.write(f'<li><a href="{position}.html">{position}</a></li>\n')
+        f.write("</ul>\n")
+        f.write("</body>\n</html>")
+    print(f"Successfully created overall summary and saved to {output_file}")
+
+
 def run_formatting(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     if position:
         create_summary_for_position(position, force_metadata=force_metadata)
@@ -100,6 +120,7 @@ def run_formatting(nominee_id=None, position=None, force_metadata=False, force_f
             create_summary_for_nominee(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
         for position in get_nominees_by_position(force_metadata=force_metadata):
             create_summary_for_position(position, force_metadata=force_metadata)
+        create_overall_summary(force_metadata=force_metadata)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Format feedback summaries.')
