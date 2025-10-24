@@ -3,6 +3,7 @@
 import argparse
 import os
 import json
+from feedback_parser import parse_feedback
 from nominees import get_active_nominees
 from summarize import get_summary_for_nominee_and_position
 
@@ -16,13 +17,10 @@ def _write_feedback(f, feedback_list):
         contents = feedback["feedback"]
         f.write(f'<span title="{date}"><a href="https://datatracker.ietf.org/person/{email}"><b>{name}</b></a></span>: {contents}\n')
 
-def create_html_summary(summary, feedback_data, input_file, output_file, feedback_dict, position):
+def create_html_summary(summary, feedback_list, input_file, output_file, feedback_dict, position):
     """Creates an HTML file with the summary and feedback."""
-    feedback_with_subject = [item for item in feedback_data if "subject" in item]
-    feedback_without_subject = [item for item in feedback_data if "subject" not in item]
-
-    if not feedback_without_subject:
-        return
+    feedback_with_subject = [item for item in feedback_list if "subject" in item]
+    feedback_without_subject = [item for item in feedback_list if "subject" not in item]
 
     nominee_info = feedback_dict["nominee_info"]
     nominee_name = nominee_info["name"]
@@ -31,9 +29,9 @@ def create_html_summary(summary, feedback_data, input_file, output_file, feedbac
         f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
         f.write(f"<h1>AI Summary for {nominee_name} for {position}:</h1>\n")
         f.write(summary)
-        f.write("<h1>Actual Feedback:</h1>\n")
-        _write_feedback(f, feedback_without_subject)
-
+        if feedback_without_subject:
+            f.write("<h1>Actual Feedback:</h1>\n")
+            _write_feedback(f, feedback_without_subject)
         if feedback_with_subject:
             f.write("<h2>Self Feedback</h2>\n")
             _write_feedback(f, feedback_with_subject)
@@ -41,19 +39,23 @@ def create_html_summary(summary, feedback_data, input_file, output_file, feedbac
     print(f"Successfully summarized {input_file} for {position} and saved to {output_file}")
 
 def create_summary_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+    print(f"Creating summary for nominee {nominee_id}")
     output_dir = "data/summaries"
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
+
+    # Make sure the parsed JSON is there.
+    parse_feedback(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     with open(input_file, "r") as f:
         feedback_dict = json.load(f)
 
-    feedback_by_position = feedback_dict.get("feedback", {})
-
-    for position, feedback_list in feedback_by_position.items():
+    for position, state in feedback_dict["nominee_info"]["positions"].items():
+        if state != "accepted":
+            continue
+        feedback_list = feedback_dict["feedback"].get(position, [])
         summary = get_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
-
         output_filename = f"{nominee_id}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
 

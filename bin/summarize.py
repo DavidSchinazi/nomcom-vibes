@@ -68,7 +68,7 @@ def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=Fa
         with open(summary_file, "r") as f:
             summary = f.read()
     elif not feedback_text.strip():
-        summary = "<p>No feedback to summarize for this position.</p>"
+        summary = "<p>No feedback for this position.</p>"
     else:
         summary = get_summary(feedback_text)
         with open(summary_file, "w") as f:
