@@ -8,6 +8,7 @@ from positions import get_position_name, get_position_short_name
 NOMINEES_DATA = None
 NOMINEE_POSITIONS_DATA = None
 ACTIVE_NOMINEES_DATA = None
+NOMINEES_BY_POSITION_DATA = None
 
 def load_nominees(force_metadata=False):
     global NOMINEES_DATA
@@ -152,15 +153,33 @@ def get_active_nominees(force_metadata=False):
     return active_nominees
 
 
+def get_nominees_by_position(force_metadata=False):
+    global NOMINEES_BY_POSITION_DATA
+    if NOMINEES_BY_POSITION_DATA:
+        return NOMINEES_BY_POSITION_DATA
+    NOMINEES_BY_POSITION_DATA = {}
+    for nominee in get_active_nominees(force_metadata=force_metadata):
+        nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
+        for position, state in nominee_info['positions'].items():
+            if state == 'accepted':
+                if position not in NOMINEES_BY_POSITION_DATA:
+                    NOMINEES_BY_POSITION_DATA[position] = []
+                NOMINEES_BY_POSITION_DATA[position].append(nominee['id'])
+    return NOMINEES_BY_POSITION_DATA
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
-    parser.add_argument("-i", "--info", action="store_true", help="Print info on each nominee, sorted.")
+    parser.add_argument("--info", action="store_true", help="Print info on each nominee, sorted.")
+    parser.add_argument("--by-position", action="store_true", help="Print nominees by position.")
     parser.add_argument("nominee_id", nargs='?', help="Get info about a specific nominee")
     args = parser.parse_args()
 
     if args.info:
         print_nominee_info(force_metadata=args.force_metadata)
+    elif args.by_position:
+        print(json.dumps(get_nominees_by_position(force_metadata=args.force_metadata), indent=4))
     elif args.nominee_id:
         print(json.dumps(get_nominee_info(args.nominee_id, force_metadata=args.force_metadata), indent=4))
     else:
