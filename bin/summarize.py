@@ -6,7 +6,7 @@ import json
 import google.generativeai as genai
 from pathlib import Path
 from feedback_parser import parse_feedback
-from nominees import get_nominee_info, get_nominees_by_position
+from nominees import get_nominee_info, get_nominees_by_position, get_active_nominees
 
 # --- Functions ---
 def get_api_key():
@@ -126,19 +126,46 @@ def get_summary_for_position(position, force_metadata=False, force_feedback=Fals
                 f.write(summary)
     return summary
 
+def run_summarize(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+    if position:
+        summary = get_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+        print(summary)
+    elif nominee_id:
+        nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
+        for position, state in nominee_info["positions"].items():
+            if state == 'accepted':
+                summary = get_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+                print(f"--- Summary for {nominee_info['name']} for {position} ---")
+                print(summary)
+    else:
+        for nominee in get_active_nominees(force_metadata=force_metadata):
+             nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
+             for position, state in nominee_info["positions"].items():
+                 if state == 'accepted':
+                    summary = get_summary_for_nominee_and_position(nominee['id'], position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+                    print(f"--- Summary for {nominee_info['name']} for {position} ---")
+                    print(summary)
+        for position in get_nominees_by_position(force_metadata=force_metadata):
+            summary = get_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+            print(f"--- Summary for position {position} ---")
+            print(summary)
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Summarize feedback for a nominee and position.')
-    parser.add_argument('position', help='The position for which to summarize feedback.')
-    parser.add_argument('--nominee_id', help='The ID of the nominee. If not provided, summarize for the position across all nominees.')
+    parser.add_argument('identifier', nargs='?', help='Optional: Specify a single nominee ID (e.g., 123) or a position (e.g., iab) to format.')
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
     parser.add_argument("-s", "--force-summarize", action="store_true", help="Force summarization even if summary file exists")
     args = parser.parse_args()
 
-    if args.nominee_id:
-        summary = get_summary_for_nominee_and_position(args.nominee_id, args.position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
-    else:
-        summary = get_summary_for_position(args.position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
-    print(summary)
+    nominee_id = None
+    position = None
+    if args.identifier:
+        try:
+            nominee_id = int(args.identifier)
+        except ValueError:
+            position = args.identifier
+
+    run_summarize(nominee_id=nominee_id, position=position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
