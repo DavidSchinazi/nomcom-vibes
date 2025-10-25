@@ -5,7 +5,7 @@ import os
 import json
 from feedback_parser import parse_feedback
 from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info
-from summarize import get_summary_for_nominee_and_position
+from summarize import get_summary_for_nominee_and_position, get_summary_for_position
 
 def _write_feedback(f, feedback_list):
     """Writes a list of feedback items to the file."""
@@ -65,7 +65,7 @@ def create_summary_for_nominee(nominee_id, force_metadata=False, force_feedback=
 
         create_summary_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position)
 
-def create_summary_for_position(position, force_metadata=False):
+def create_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     print(f"Creating summary for position {position}")
     output_dir = "data/summaries"
     if not os.path.exists(output_dir):
@@ -90,6 +90,9 @@ def create_summary_for_position(position, force_metadata=False):
             summary_file = f"{nominee_id}_{position}.html"
             f.write(f'<li><a href="{summary_file}">{nominee_name}</a></li>\n')
         f.write("</ul>\n")
+        summary = get_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+        f.write("<h1>AI Summary for this position:</h1>\n")
+        f.write(summary)
         f.write("</body>\n</html>")
     print(f"Successfully created summary for position {position} and saved to {output_file}")
 
@@ -116,14 +119,14 @@ def create_overall_summary(force_metadata=False):
 
 def run_formatting(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     if position:
-        create_summary_for_position(position, force_metadata=force_metadata)
+        create_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
     elif nominee_id:
         create_summary_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
     else:
         for nominee in get_active_nominees(force_metadata=force_metadata):
             create_summary_for_nominee(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
         for position in get_nominees_by_position(force_metadata=force_metadata):
-            create_summary_for_position(position, force_metadata=force_metadata)
+            create_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
         create_overall_summary(force_metadata=force_metadata)
 
 if __name__ == "__main__":
