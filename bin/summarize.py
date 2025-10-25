@@ -108,7 +108,7 @@ def get_summary_for_position(position, force_metadata=False, force_feedback=Fals
             all_feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
 
     summary_filename = f"{position}.txt"
-    summary_dir = "data/ai_summaries/position_reviews"
+    summary_dir = "data/ai_summaries"
     if not os.path.exists(summary_dir):
         os.makedirs(summary_dir)
     summary_file = os.path.join(summary_dir, summary_filename)
