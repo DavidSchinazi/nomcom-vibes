@@ -27,7 +27,7 @@ def create_summary_for_nominee_and_position(summary, feedback_list, input_file, 
 
     with open(output_file, "w") as f:
         f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
-        f.write(f"<h1>AI Summary for {nominee_name} for {position}:</h1>\n")
+        f.write(f'<h1>AI Summary for {nominee_name} for <a href="{position}.html">{position}</a>:</h1>\n')
         f.write(summary)
         if feedback_without_subject:
             f.write("<h1>Actual Feedback:</h1>\n")
