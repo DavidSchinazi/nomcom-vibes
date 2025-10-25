@@ -32,6 +32,10 @@ def create_summary_for_nominee_and_position(summary, feedback_list, input_file, 
         if feedback_without_subject:
             f.write("<h1>Actual Feedback:</h1>\n")
             _write_feedback(f, feedback_without_subject)
+        questionnaire = feedback_dict["questionnaires"].get(position)
+        if questionnaire:
+            f.write("<h1>Questionnaire:</h1>\n")
+            f.write(questionnaire)
         if feedback_with_subject:
             f.write("<h2>Self Feedback</h2>\n")
             _write_feedback(f, feedback_with_subject)
