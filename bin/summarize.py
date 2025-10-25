@@ -30,14 +30,14 @@ def get_summary(feedback_text, use_pro_model=False):
         # Extract HTML from markdown code block if present
         match = re.search(r"<[a-zA-Z][^>]*>.*</[a-zA-Z][^>]*>", summary_text, re.DOTALL)
         if match:
-            return match.group(0).strip()
+            return match.group(0).strip(), True
         # If no HTML tags found, try to remove the preamble
         preamble = "Of course. Here is a summary of the feedback in HTML format."
         if summary_text.startswith(preamble):
-            return summary_text[len(preamble):].strip()
-        return summary_text
+            return summary_text[len(preamble):].strip(), True
+        return summary_text, True
     except Exception as e:
-        return f"<h1>Error summarizing feedback</h1><p>{e}</p>"
+        return f"<h1>Error summarizing feedback</h1><p>{e}</p>", False
 
 def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     """Gets the summary for a given nominee and position."""
@@ -70,9 +70,10 @@ def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=Fa
     elif not feedback_text.strip():
         summary = "<p>No feedback for this position.</p>"
     else:
-        summary = get_summary(feedback_text)
-        with open(summary_file, "w") as f:
-            f.write(summary)
+        summary, success = get_summary(feedback_text)
+        if success:
+            with open(summary_file, "w") as f:
+                f.write(summary)
     return summary
 
 if __name__ == "__main__":
