@@ -6,6 +6,7 @@ import json
 import google.generativeai as genai
 from pathlib import Path
 from feedback_parser import parse_feedback
+from nominees import get_nominee_info, get_nominees_by_position
 
 # --- Functions ---
 def get_api_key():
@@ -19,13 +20,13 @@ def get_api_key():
         api_key_file.write_text(api_key)
         return api_key
 
-def get_summary(feedback_text, use_pro_model=False):
+def get_summary(prompt, use_pro_model=False):
     """Summarizes the feedback text using the Gemini API."""
     try:
         api_key = get_api_key()
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro-latest' if use_pro_model else 'gemini-flash-latest')
-        response = model.generate_content(f"Summarize the following feedback. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML:\n\n{feedback_text}")
+        response = model.generate_content(prompt)
         summary_text = response.text
         # Extract HTML from markdown code block if present
         match = re.search(r"<[a-zA-Z][^>]*>.*</[a-zA-Z][^>]*>", summary_text, re.DOTALL)
@@ -41,6 +42,8 @@ def get_summary(feedback_text, use_pro_model=False):
 
 def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     """Gets the summary for a given nominee and position."""
+    nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
+    nominee_name = nominee_info['name']
     feedback_dict = parse_feedback(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
 
     feedback_by_position = feedback_dict.get("feedback", {})
@@ -70,7 +73,54 @@ def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=Fa
     elif not feedback_text.strip():
         summary = "<p>No feedback for this position.</p>"
     else:
-        summary, success = get_summary(feedback_text)
+        prompt = f"Summarize the following feedback for {nominee_name} for the {position} position. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML:\n\n{feedback_text}"
+        summary, success = get_summary(prompt)
+        if success:
+            with open(summary_file, "w") as f:
+                f.write(summary)
+    return summary
+
+def get_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+    """Gets the summary for a given position."""
+    nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
+    nominee_ids = nominees_by_position.get(position, [])
+
+    if not nominee_ids:
+        return f"<h1>No nominees found for position {position}</h1>"
+
+    all_feedback_text = ""
+    for nominee_id in nominee_ids:
+        nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
+        all_feedback_text += f"\n\n--- Feedback for {nominee_info['name']} ---\n\n"
+        feedback_dict = parse_feedback(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
+        feedback_by_position = feedback_dict.get("feedback", {})
+        feedback_list = feedback_by_position.get(position, [])
+
+        for item in feedback_list:
+            if "subject" in item:
+                # Skip self feedback.
+                continue
+            if "feedback" not in item or "name" not in item:
+                print(f"Missing information when parsing feedback for nominee {nominee_id} for position '{position}': {item}")
+                continue
+            author = item["name"]
+            contents = item["feedback"]
+            all_feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
+
+    summary_filename = f"{position}.txt"
+    summary_dir = "data/ai_summaries/position_reviews"
+    if not os.path.exists(summary_dir):
+        os.makedirs(summary_dir)
+    summary_file = os.path.join(summary_dir, summary_filename)
+
+    if os.path.exists(summary_file) and not force_summarize:
+        with open(summary_file, "r") as f:
+            summary = f.read()
+    elif not all_feedback_text.strip():
+        summary = "<p>No feedback for this position.</p>"
+    else:
+        prompt = f"Based on the following feedback for multiple candidates for the {position} position, who does the community think is the best choice? Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML:\n\n{all_feedback_text}"
+        summary, success = get_summary(prompt, use_pro_model=True)
         if success:
             with open(summary_file, "w") as f:
                 f.write(summary)
@@ -79,13 +129,16 @@ def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=Fa
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Summarize feedback for a nominee and position.')
-    parser.add_argument('nominee_id', help='The ID of the nominee.')
     parser.add_argument('position', help='The position for which to summarize feedback.')
+    parser.add_argument('--nominee_id', help='The ID of the nominee. If not provided, summarize for the position across all nominees.')
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
     parser.add_argument("-s", "--force-summarize", action="store_true", help="Force summarization even if summary file exists")
     args = parser.parse_args()
 
-    summary = get_summary_for_nominee_and_position(args.nominee_id, args.position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
+    if args.nominee_id:
+        summary = get_summary_for_nominee_and_position(args.nominee_id, args.position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
+    else:
+        summary = get_summary_for_position(args.position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
     print(summary)
