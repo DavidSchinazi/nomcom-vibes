@@ -63,7 +63,7 @@ def create_summary_for_nominee(nominee_id, force_metadata=False, force_feedback=
 
 def create_summary_for_position(position, force_metadata=False):
     print(f"Creating summary for position {position}")
-    output_dir = "data/position_summaries"
+    output_dir = "data/summaries"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -83,7 +83,7 @@ def create_summary_for_position(position, force_metadata=False):
         for nominee_id in nominee_ids:
             nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
             nominee_name = nominee_info["name"]
-            summary_file = f"../summaries/{nominee_id}_{position}.html"
+            summary_file = f"{nominee_id}_{position}.html"
             f.write(f'<li><a href="{summary_file}">{nominee_name}</a></li>\n')
         f.write("</ul>\n")
         f.write("</body>\n</html>")
@@ -92,7 +92,7 @@ def create_summary_for_position(position, force_metadata=False):
 
 def create_overall_summary(force_metadata=False):
     print("Creating overall summary")
-    output_dir = "data/position_summaries"
+    output_dir = "data/summaries"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
