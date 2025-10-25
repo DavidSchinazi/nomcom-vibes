@@ -66,8 +66,32 @@ def parse_feedback(nominee_id, force_metadata=False, force_feedback=False, force
                     feedback_data[position] = []
                 feedback_data[position].append(data)
 
+    # Find the questionnaire tab pane
+    questionnaire_tab_pane = soup.find("div", {"id": "questio", "role": "tabpanel"})
+    questionnaire_data = {}
+    if questionnaire_tab_pane:
+        feedback_entries = questionnaire_tab_pane.find_all("dl", class_="row")
+        for entry in feedback_entries:
+            position = None
+            questionnaire = None
+            dts = entry.find_all("dt")
+            for dt in dts:
+                dt_text = dt.text.strip()
+                dd = dt.find_next_sibling("dd")
+                if dd:
+                    dd_text = dd.text.strip()
+                    if "Positions" in dt_text:
+                        position = get_position_short_name(dd_text)
+                    elif "Feedback" in dt_text:
+                        pre_tag = dd.find("pre")
+                        if pre_tag:
+                            questionnaire = pre_tag.text.strip()
+            if position and questionnaire:
+                questionnaire_data[position] = questionnaire_data.get(position, "") + questionnaire
+
     result = {}
     result["feedback"] = feedback_data
+    result["questionnaires"] = questionnaire_data
 
     # Get nominee info and add it to the result dictionary
     nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
