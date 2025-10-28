@@ -26,9 +26,9 @@ def create_summary_for_nominee_and_position(summary, feedback_list, input_file, 
     nominee_name = nominee_info["name"]
 
     with open(output_file, "w") as f:
-        f.write("<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n")
-        f.write(f'<h1>AI Summary for {nominee_name} for <a href="{position}.html" style="color:black; text-decoration:none;">{position}</a>:</h1>\n')
-        f.write(summary)
+        f.write(f'<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n')
+        f.write(f'<h1>{nominee_name} – <a href="{position}.html" style="color:black; text-decoration:none;">{position}</a>:</h1>\n')
+        f.write(f'<h1>AI Summary:</h1>\n{summary}\n')
         if feedback_without_subject:
             f.write("<h1>Actual Feedback:</h1>\n")
             _write_feedback(f, feedback_without_subject)
@@ -37,7 +37,7 @@ def create_summary_for_nominee_and_position(summary, feedback_list, input_file, 
             f.write("<h1>Questionnaire:</h1>\n")
             f.write(f'<pre style="white-space: pre-wrap;">{questionnaire}</pre>\n')
         if feedback_with_subject:
-            f.write("<h2>Self Feedback</h2>\n")
+            f.write("<h2>Self Feedback:</h2>\n")
             _write_feedback(f, feedback_with_subject)
         f.write("</body>\n</html>")
     print(f"Successfully summarized {input_file} for {position} and saved to {output_file}")
