@@ -209,6 +209,8 @@ if __name__ == "__main__":
     if args.summaries_enabled is not None:
         print(f"Setting enable_summaries to {args.summaries_enabled}")
         set_enable_summaries(args.summaries_enabled)
+        if args.summaries_enabled:
+            get_gemini_api_key()
     else:
         nominee_id = None
         position = None
