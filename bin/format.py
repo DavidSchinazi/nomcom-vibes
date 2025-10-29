@@ -98,8 +98,7 @@ def create_page_for_position(position, force_metadata=False, force_feedback=Fals
     print(f"Successfully created summary for position {position} and saved to {output_file}")
 
 
-def create_overall_summary(force_metadata=False):
-    print("Creating overall summary")
+def create_index_page(force_metadata=False):
     output_dir = "data/summaries"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -128,7 +127,7 @@ def run_formatting(nominee_id=None, position=None, force_metadata=False, force_f
             create_page_for_nominee(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
         for position in get_nominees_by_position(force_metadata=force_metadata):
             create_page_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
-        create_overall_summary(force_metadata=force_metadata)
+        create_index_page(force_metadata=force_metadata)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Format feedback summaries.')
