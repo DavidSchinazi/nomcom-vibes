@@ -16,17 +16,23 @@
             font-size: 1.2rem;
             line-height: 1;
         }}
+        .collapsible-content {{
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }}
     </style>
     <script>
         function toggleSection(sectionId) {{
             const content = document.getElementById(sectionId);
             const button = document.getElementById(sectionId + '-toggle');
-            if (content.style.display === 'none') {{
-                content.style.display = 'block';
-                button.innerHTML = '&#9660;'; // Down-pointing triangle
-            }} else {{
-                content.style.display = 'none';
+            content.classList.toggle('active');
+            if (content.style.maxHeight) {{
+                content.style.maxHeight = null;
                 button.innerHTML = '&#9654;'; // Right-pointing triangle
+            }} else {{
+                content.style.maxHeight = content.scrollHeight + "px";
+                button.innerHTML = '&#9660;'; // Down-pointing triangle
             }}
         }}
     </script>
