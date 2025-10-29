@@ -10,4 +10,4 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
     parser.add_argument("-s", "--force-summarize", action="store_true", help="Force summarization even if summary file exists")
     args = parser.parse_args()
-    run_formatting(args.nominee_id, force_metadata=args.force_metadata, force_parse=args.force_parse, force_summarize=args.force_summarize)
+    run_formatting(args.nominee_id, force_metadata=args.force_metadata, force_parse=args.force_parse, redo_summaries=args.redo_summaries)

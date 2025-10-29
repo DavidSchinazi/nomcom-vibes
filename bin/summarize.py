@@ -9,24 +9,59 @@ from feedback_parser import parse_feedback
 from nominees import get_nominee_info, get_nominees_by_position, get_active_nominees
 
 
-GEMINI_API_KEY = None
+GEMINI_SETTINGS = None
+GEMINI_SETTINGS_FILE = "data/gemini_api_key.json"
 
-def get_gemini_api_key():
-    global GEMINI_API_KEY
-    if not GEMINI_API_KEY:
-        api_key_file = Path("data/gemini_api_key.txt")
-        if api_key_file.exists():
-            GEMINI_API_KEY = api_key_file.read_text().strip()
+def save_gemini_settings(settings):
+    global GEMINI_SETTINGS
+    GEMINI_SETTINGS = settings
+    with open(GEMINI_SETTINGS_FILE, "w") as f:
+        json.dump(GEMINI_SETTINGS, f, indent=4)
+
+def get_gemini_settings():
+    global GEMINI_SETTINGS
+    if not GEMINI_SETTINGS:
+        if os.path.exists(GEMINI_SETTINGS_FILE):
+            with open(GEMINI_SETTINGS_FILE, "r") as f:
+                GEMINI_SETTINGS = json.load(f)
         else:
-            GEMINI_API_KEY = input("Please enter your Gemini API key: ")
-            api_key_file.parent.mkdir(exist_ok=True)
-            api_key_file.write_text(GEMINI_API_KEY)
-    return GEMINI_API_KEY
+            save_gemini_settings({
+                "enabled": False,
+                "api_key": "",
+            })
+    return GEMINI_SETTINGS
 
-def get_ai_summary(prompt, use_pro_model=False):
+def get_gemini_api_key(summaries_forced=None):
+    if are_summaries_enabled(summaries_forced=summaries_forced):
+        settings = get_gemini_settings()
+        api_key = settings.get("api_key", "").strip()
+        if not api_key:
+            api_key = input("Please enter your Gemini API key: ").strip()
+            settings["api_key"] = api_key
+            save_gemini_settings(settings)
+        return api_key
+    return None
+
+def save_gemini_api_key(api_key):
+    settings = get_gemini_settings()
+    settings["api_key"] = api_key
+    save_gemini_settings(settings)
+
+def set_enable_gemini_api(enabled):
+    settings = get_gemini_settings()
+    settings["enabled"] = enabled
+    save_gemini_settings(settings)
+
+def are_summaries_enabled(summaries_forced=None):
+    if summaries_forced is not None:
+        return summaries_forced
+    settings = get_gemini_settings()
+    return settings.get("enabled", False)
+
+def get_ai_summary(prompt, use_pro_model=False, summaries_forced=None):
     """Summarizes the feedback text using the Gemini API."""
     try:
-        api_key = get_gemini_api_key()
+        api_key = get_gemini_api_key(summaries_forced=summaries_forced)
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro-latest' if use_pro_model else 'gemini-flash-latest')
         response = model.generate_content(prompt)
@@ -43,8 +78,10 @@ def get_ai_summary(prompt, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>", False
 
-def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     """Gets the summary for a given nominee and position."""
+    if not get_gemini_api_key(summaries_forced=summaries_forced):
+        return None
     nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
     nominee_name = nominee_info['name']
     feedback_dict = parse_feedback(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
@@ -70,7 +107,7 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
         os.makedirs(summary_dir)
     summary_file = os.path.join(summary_dir, summary_filename)
 
-    if os.path.exists(summary_file) and not force_summarize:
+    if os.path.exists(summary_file) and not redo_summaries:
         with open(summary_file, "r") as f:
             summary = f.read()
     elif not feedback_text.strip():
@@ -83,8 +120,10 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
                 f.write(summary)
     return summary
 
-def get_ai_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def get_ai_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     """Gets the summary for a given position."""
+    if not get_gemini_api_key(summaries_forced=summaries_forced):
+        return None
     nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
     nominee_ids = nominees_by_position.get(position, [])
 
@@ -116,7 +155,7 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
         os.makedirs(summary_dir)
     summary_file = os.path.join(summary_dir, summary_filename)
 
-    if os.path.exists(summary_file) and not force_summarize:
+    if os.path.exists(summary_file) and not redo_summaries:
         with open(summary_file, "r") as f:
             summary = f.read()
     elif not all_feedback_text.strip():
@@ -129,15 +168,15 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
                 f.write(summary)
     return summary
 
-def run_summarize(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def run_summarize(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False):
     if position:
-        summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+        summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries)
         print(summary)
     elif nominee_id:
         nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
         for position, state in nominee_info["positions"].items():
             if state == 'accepted':
-                summary = get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+                summary = get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries)
                 print(f"--- Summary for {nominee_info['name']} for {position} ---")
                 print(summary)
     else:
@@ -145,11 +184,11 @@ def run_summarize(nominee_id=None, position=None, force_metadata=False, force_fe
              nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
              for position, state in nominee_info["positions"].items():
                  if state == 'accepted':
-                    summary = get_ai_summary_for_nominee_and_position(nominee['id'], position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+                    summary = get_ai_summary_for_nominee_and_position(nominee['id'], position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries)
                     print(f"--- Summary for {nominee_info['name']} for {position} ---")
                     print(summary)
         for position in get_nominees_by_position(force_metadata=force_metadata):
-            summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+            summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries)
             print(f"--- Summary for position {position} ---")
             print(summary)
 
@@ -171,4 +210,4 @@ if __name__ == "__main__":
         except ValueError:
             position = args.identifier
 
-    run_summarize(nominee_id=nominee_id, position=position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
+    run_summarize(nominee_id=nominee_id, position=position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, redo_summaries=args.redo_summaries)

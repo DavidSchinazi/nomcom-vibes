@@ -5,7 +5,7 @@ import os
 import json
 from feedback_parser import parse_feedback
 from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info
-from summarize import get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
+from summarize import are_summaries_enabled, get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
 
 def _write_feedback(f, feedback_list):
     """Writes a list of feedback items to the file."""
@@ -27,10 +27,11 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
 
     with open(output_file, "w") as f:
         f.write(f'<html>\n<head>\n<title>Feedback Summary</title>\n</head>\n<body>\n')
-        f.write(f'<h1>{nominee_name} – <a href="{position}.html" style="color:black; text-decoration:none;">{position}</a>:</h1>\n')
-        f.write(f'<h1>AI Summary:</h1>\n{summary}\n')
+        f.write(f'<h1>{nominee_name} – <a href="{position}.html" style="color:black; text-decoration:none;">{position}</a></h1>\n')
+        if summary:
+            f.write(f'<h1>AI Summary:</h1>\n{summary}\n')
         if feedback_without_subject:
-            f.write("<h1>Actual Feedback:</h1>\n")
+            f.write("<h1>Community Feedback:</h1>\n")
             _write_feedback(f, feedback_without_subject)
         questionnaire = feedback_dict["questionnaires"].get(position)
         if questionnaire:
@@ -42,7 +43,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         f.write("</body>\n</html>")
     print(f"Successfully summarized {input_file} for {position} and saved to {output_file}")
 
-def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     print(f"Creating summary for nominee {nominee_id}")
     output_dir = "data/summaries"
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
@@ -59,13 +60,13 @@ def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=Fal
         if state != "accepted":
             continue
         feedback_list = feedback_dict["feedback"].get(position, [])
-        summary = get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+        summary = get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
         output_filename = f"{nominee_id}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
 
         create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position)
 
-def create_page_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def create_page_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     print(f"Creating summary for position {position}")
     output_dir = "data/summaries"
     if not os.path.exists(output_dir):
@@ -90,9 +91,9 @@ def create_page_for_position(position, force_metadata=False, force_feedback=Fals
             summary_file = f"{nominee_id}_{position}.html"
             f.write(f'<li><a href="{summary_file}">{nominee_name}</a></li>\n')
         f.write("</ul>\n")
-        summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
-        f.write("<h1>AI Summary for this position:</h1>\n")
-        f.write(summary)
+        summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
+        if summary:
+            f.write(f'<h1>AI Summary for this position:</h1>\n{summary}\n')
         f.write("</body>\n</html>")
     print(f"Successfully created summary for position {position} and saved to {output_file}")
 
@@ -117,16 +118,16 @@ def create_overall_summary(force_metadata=False):
     print(f"Successfully created overall summary and saved to {output_file}")
 
 
-def run_formatting(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def run_formatting(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     if position:
-        create_page_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+        create_page_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
     elif nominee_id:
-        create_page_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+        create_page_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
     else:
         for nominee in get_active_nominees(force_metadata=force_metadata):
-            create_page_for_nominee(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+            create_page_for_nominee(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
         for position in get_nominees_by_position(force_metadata=force_metadata):
-            create_page_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+            create_page_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
         create_overall_summary(force_metadata=force_metadata)
 
 if __name__ == "__main__":
@@ -135,7 +136,9 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
-    parser.add_argument("-s", "--force-summarize", action="store_true", help="Force summarization even if summary file exists")
+    parser.add_argument("-s", "--redo-summaries", action="store_true", help="Perform summarization even if summary file exists")
+    parser.add_argument("-x", "--add-summaries", action="store_true", dest="summaries_forced", help="Add summarization even if disabled")
+    parser.add_argument("-z", "--no-summaries", action="store_false", dest="summaries_forced", help="Disable summarization even if enabled")
     args = parser.parse_args()
 
     nominee_id = None
@@ -146,4 +149,4 @@ if __name__ == "__main__":
         except ValueError:
             position = args.identifier
 
-    run_formatting(nominee_id=nominee_id, position=position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, force_summarize=args.force_summarize)
+    run_formatting(nominee_id=nominee_id, position=position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, redo_summaries=args.redo_summaries, summaries_forced=args.summaries_forced)
