@@ -26,7 +26,6 @@
         function toggleSection(sectionId) {{
             const content = document.getElementById(sectionId);
             const button = document.getElementById(sectionId + '-toggle');
-            content.classList.toggle('active');
             if (content.style.maxHeight) {{
                 content.style.maxHeight = null;
                 button.innerHTML = '&#9654;'; // Right-pointing triangle
@@ -35,6 +34,20 @@
                 button.innerHTML = '&#9660;'; // Down-pointing triangle
             }}
         }}
+
+        window.addEventListener('resize', () => {{
+            const activeContents = document.querySelectorAll('.collapsible-content.active');
+            activeContents.forEach(content => {{
+                content.style.maxHeight = content.scrollHeight + "px";
+            }});
+        }});
+
+        window.addEventListener('load', () => {{
+            const activeContents = document.querySelectorAll('.collapsible-content.active');
+            activeContents.forEach(content => {{
+                content.style.maxHeight = content.scrollHeight + "px";
+            }});
+        }});
     </script>
 </head>
 <body>
