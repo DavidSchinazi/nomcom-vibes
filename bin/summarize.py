@@ -10,7 +10,7 @@ from nominees import get_nominee_info, get_nominees_by_position, get_active_nomi
 
 
 GEMINI_SETTINGS = None
-GEMINI_SETTINGS_FILE = "data/gemini_api_key.json"
+GEMINI_SETTINGS_FILE = "data/gemini_settings.json"
 
 def save_gemini_settings(settings):
     global GEMINI_SETTINGS
