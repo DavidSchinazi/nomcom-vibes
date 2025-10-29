@@ -28,12 +28,12 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     body = f'<h1>{nominee_name} – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
-        body += f'<h2 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-toggle" class="toggle-button">&#9660;</span>AI Summary:</h2>\n'
+        body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-toggle" class="toggle-button">&#9660;</span>AI Summary:</h1>\n'
         body += f'<div id="ai-summary-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">{summary}</div>\n'
         body += f'</div>\n'
     if feedback_without_subject:
         body += '<div style="background-color: #ddffdd;">\n'
-        body += f'<h2 onclick="toggleSection(\'community-feedback-content\')" style="cursor: pointer;"><span id="community-feedback-toggle" class="toggle-button">&#9660;</span>Community Feedback:</h2>\n'
+        body += f'<h1 onclick="toggleSection(\'community-feedback-content\')" style="cursor: pointer;"><span id="community-feedback-toggle" class="toggle-button">&#9660;</span>Community Feedback:</h1>\n'
         body += '<div id="community-feedback-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">\n'
         for feedback in feedback_without_subject:
             name = feedback["name"]
@@ -49,11 +49,11 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     questionnaire = feedback_dict["questionnaires"].get(position_short_name)
     if questionnaire:
         body += '<div style="background-color: #eeeeee;">\n'
-        body += f'<h2 onclick="toggleSection(\'questionnaire-content\')" style="cursor: pointer;"><span id="questionnaire-toggle" class="toggle-button">&#9660;</span>Questionnaire:</h2>\n'
+        body += f'<h1 onclick="toggleSection(\'questionnaire-content\')" style="cursor: pointer;"><span id="questionnaire-toggle" class="toggle-button">&#9660;</span>Questionnaire:</h1>\n'
         body += f'<div id="questionnaire-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;"><pre class="questionnaire">{questionnaire}</pre></div>\n'
         body += '</div>\n'
     if feedback_with_subject:
-        body += f'<h2 onclick="toggleSection(\'self-feedback-content\')" style="cursor: pointer;"><span id=\"self-feedback-toggle\" class=\"toggle-button\">&#9660;</span>Self Feedback:</h2>\n'
+        body += f'<h1 onclick="toggleSection(\'self-feedback-content\')" style="cursor: pointer;"><span id=\"self-feedback-toggle\" class=\"toggle-button\">&#9660;</span>Self Feedback:</h1>\n'
         body += '<div id="self-feedback-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">\n'
         for feedback in feedback_with_subject:
             name = feedback["name"]
@@ -122,7 +122,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
-        body += f'<h2 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-toggle" class="toggle-button">&#9660;</span>AI Summary for this position:</h2>\n'
+        body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-toggle" class="toggle-button">&#9660;</span>AI Summary for this position:</h1>\n'
         body += f'<div id="ai-summary-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">{summary}</div>\n'
         body += f'</div>\n'
 

@@ -113,7 +113,7 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
     elif not feedback_text.strip():
         summary = "<p>No feedback for this position.</p>"
     else:
-        prompt = f"Summarize the following feedback for {nominee_name} for the {position} position. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML:\n\n{feedback_text}"
+        prompt = f"Summarize the following feedback for {nominee_name} for the {position} position. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML. Use <h3> for main sections and <h4> for subsections.:\n\n{feedback_text}"
         summary, success = get_ai_summary(prompt)
         if success:
             with open(summary_file, "w") as f:
@@ -161,7 +161,7 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
     elif not all_feedback_text.strip():
         summary = "<p>No feedback for this position.</p>"
     else:
-        prompt = f"Based on the following feedback for multiple candidates for the {position} position, who does the community think is the best choice? If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML:\n\n{all_feedback_text}"
+        prompt = f"Based on the following feedback for multiple candidates for the {position} position, who does the community think is the best choice? If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML. Use <h3> for main sections and <h4> for subsections.:\n\n{all_feedback_text}"
         summary, success = get_ai_summary(prompt, use_pro_model=True)
         if success:
             with open(summary_file, "w") as f:
