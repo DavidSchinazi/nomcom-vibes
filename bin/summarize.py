@@ -47,7 +47,7 @@ def save_gemini_api_key(api_key):
     settings["api_key"] = api_key
     save_gemini_settings(settings)
 
-def set_enable_gemini_api(enabled):
+def set_enable_summaries(enabled):
     settings = get_gemini_settings()
     settings["enabled"] = enabled
     save_gemini_settings(settings)
@@ -168,15 +168,15 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
                 f.write(summary)
     return summary
 
-def run_summarize(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False):
+def run_summarize(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     if position:
-        summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries)
+        summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
         print(summary)
     elif nominee_id:
         nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
         for position, state in nominee_info["positions"].items():
             if state == 'accepted':
-                summary = get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries)
+                summary = get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
                 print(f"--- Summary for {nominee_info['name']} for {position} ---")
                 print(summary)
     else:
@@ -184,11 +184,11 @@ def run_summarize(nominee_id=None, position=None, force_metadata=False, force_fe
              nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
              for position, state in nominee_info["positions"].items():
                  if state == 'accepted':
-                    summary = get_ai_summary_for_nominee_and_position(nominee['id'], position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries)
+                    summary = get_ai_summary_for_nominee_and_position(nominee['id'], position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
                     print(f"--- Summary for {nominee_info['name']} for {position} ---")
                     print(summary)
         for position in get_nominees_by_position(force_metadata=force_metadata):
-            summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries)
+            summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
             print(f"--- Summary for position {position} ---")
             print(summary)
 
@@ -199,15 +199,23 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
-    parser.add_argument("-s", "--force-summarize", action="store_true", help="Force summarization even if summary file exists")
+    parser.add_argument("-s", "--redo-summaries", action="store_true", help="Perform summarization even if summary file exists")
+    parser.add_argument("-x", "--add-summaries", action='store_const', const=True, default=None, dest="summaries_forced", help="Add summarization even if disabled")
+    parser.add_argument("-z", "--no-summaries", action='store_const', const=False, default=None, dest="summaries_forced", help="Disable summarization even if enabled")
+    parser.add_argument("--enable-summaries", action='store_const', const=True, default=None, dest="summaries_enabled", help="Add summarization even if disabled")
+    parser.add_argument("--disable-summaries", action='store_const', const=False, default=None, dest="summaries_enabled", help="Disable summarization even if enabled")
     args = parser.parse_args()
 
-    nominee_id = None
-    position = None
-    if args.identifier:
-        try:
-            nominee_id = int(args.identifier)
-        except ValueError:
-            position = args.identifier
+    if args.summaries_enabled is not None:
+        print(f"Setting enable_summaries to {args.summaries_enabled}")
+        set_enable_summaries(args.summaries_enabled)
+    else:
+        nominee_id = None
+        position = None
+        if args.identifier:
+            try:
+                nominee_id = int(args.identifier)
+            except ValueError:
+                position = args.identifier
 
-    run_summarize(nominee_id=nominee_id, position=position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, redo_summaries=args.redo_summaries)
+        run_summarize(nominee_id=nominee_id, position=position, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, redo_summaries=args.redo_summaries, summaries_forced=args.summaries_forced)
