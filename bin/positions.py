@@ -22,6 +22,12 @@ POSITION_SHORT_NAMES = {
 def get_position_short_name(name):
     return POSITION_SHORT_NAMES[name]
 
+def get_position_full_name(short_name):
+    for full_name, s_name in POSITION_SHORT_NAMES.items():
+        if s_name == short_name:
+            return full_name
+    return None
+
 def get_positions(force_metadata=False):
     global POSITIONS_DATA
     if POSITIONS_DATA:
@@ -49,7 +55,7 @@ def get_position_name(resource_uri, force_metadata=False):
     positions = get_positions(force_metadata=force_metadata)
     for position in positions:
         if position['resource_uri'] == resource_uri:
-            return position['name']
+            return get_position_short_name(position['name'])
     return None
 
 
