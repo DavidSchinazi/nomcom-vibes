@@ -20,7 +20,7 @@ def get_api_key():
         api_key_file.write_text(api_key)
         return api_key
 
-def get_summary(prompt, use_pro_model=False):
+def get_ai_summary(prompt, use_pro_model=False):
     """Summarizes the feedback text using the Gemini API."""
     try:
         api_key = get_api_key()
@@ -40,7 +40,7 @@ def get_summary(prompt, use_pro_model=False):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>", False
 
-def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     """Gets the summary for a given nominee and position."""
     nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
     nominee_name = nominee_info['name']
@@ -74,13 +74,13 @@ def get_summary_for_nominee_and_position(nominee_id, position, force_metadata=Fa
         summary = "<p>No feedback for this position.</p>"
     else:
         prompt = f"Summarize the following feedback for {nominee_name} for the {position} position. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML:\n\n{feedback_text}"
-        summary, success = get_summary(prompt)
+        summary, success = get_ai_summary(prompt)
         if success:
             with open(summary_file, "w") as f:
                 f.write(summary)
     return summary
 
-def get_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def get_ai_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     """Gets the summary for a given position."""
     nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
     nominee_ids = nominees_by_position.get(position, [])
@@ -120,7 +120,7 @@ def get_summary_for_position(position, force_metadata=False, force_feedback=Fals
         summary = "<p>No feedback for this position.</p>"
     else:
         prompt = f"Based on the following feedback for multiple candidates for the {position} position, who does the community think is the best choice? If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML:\n\n{all_feedback_text}"
-        summary, success = get_summary(prompt, use_pro_model=True)
+        summary, success = get_ai_summary(prompt, use_pro_model=True)
         if success:
             with open(summary_file, "w") as f:
                 f.write(summary)
@@ -128,13 +128,13 @@ def get_summary_for_position(position, force_metadata=False, force_feedback=Fals
 
 def run_summarize(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     if position:
-        summary = get_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+        summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
         print(summary)
     elif nominee_id:
         nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
         for position, state in nominee_info["positions"].items():
             if state == 'accepted':
-                summary = get_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+                summary = get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
                 print(f"--- Summary for {nominee_info['name']} for {position} ---")
                 print(summary)
     else:
@@ -142,11 +142,11 @@ def run_summarize(nominee_id=None, position=None, force_metadata=False, force_fe
              nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
              for position, state in nominee_info["positions"].items():
                  if state == 'accepted':
-                    summary = get_summary_for_nominee_and_position(nominee['id'], position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+                    summary = get_ai_summary_for_nominee_and_position(nominee['id'], position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
                     print(f"--- Summary for {nominee_info['name']} for {position} ---")
                     print(summary)
         for position in get_nominees_by_position(force_metadata=force_metadata):
-            summary = get_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+            summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
             print(f"--- Summary for position {position} ---")
             print(summary)
 
