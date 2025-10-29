@@ -28,11 +28,13 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     body = f'<h1>{nominee_name} – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
-        body += f'<h2>AI Summary:</h2>\n{summary}\n'
+        body += f'<h2><span id="ai-summary-toggle" class="toggle-button" onclick="toggleSection(\'ai-summary-content\')">&#9660;</span>AI Summary:</h2>\n'
+        body += f'<div id="ai-summary-content">{summary}</div>\n'
         body += f'</div>\n'
     if feedback_without_subject:
         body += '<div style="background-color: #ddffdd;">\n'
-        body += "<h2>Community Feedback:</h2>\n"
+        body += f'<h2><span id="community-feedback-toggle" class="toggle-button" onclick="toggleSection(\'community-feedback-content\')">&#9660;</span>Community Feedback:</h2>\n'
+        body += '<div id="community-feedback-content">\n'
         for feedback in feedback_without_subject:
             name = feedback["name"]
             email = feedback["email"]
@@ -43,14 +45,16 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
             body += f'<p>{contents}</p>\n'
             body += f'</div>\n'
         body += '</div>\n'
+        body += '</div>\n'
     questionnaire = feedback_dict["questionnaires"].get(position_short_name)
     if questionnaire:
         body += '<div style="background-color: #eeeeee;">\n'
-        body += "<h2>Questionnaire:</h2>\n"
-        body += f'<pre class="questionnaire">{questionnaire}</pre>\n'
+        body += f'<h2><span id="questionnaire-toggle" class="toggle-button" onclick="toggleSection(\'questionnaire-content\')">&#9660;</span>Questionnaire:</h2>\n'
+        body += f'<div id="questionnaire-content"><pre class="questionnaire">{questionnaire}</pre></div>\n'
         body += '</div>\n'
     if feedback_with_subject:
-        body += "<h2>Self Feedback:</h2>\n"
+        body += "<h2><span id=\"self-feedback-toggle\" class=\"toggle-button\" onclick=\"toggleSection('self-feedback-content')\">&#9660;</span>Self Feedback:</h2>\n"
+        body += '<div id="self-feedback-content">\n'
         for feedback in feedback_with_subject:
             name = feedback["name"]
             email = feedback["email"]
@@ -60,6 +64,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
             body += f'<p><a href="https://datatracker.ietf.org/person/{email}" class="feedback-author">{name}</a> <span class="feedback-date">({date})</span></p>\n'
             body += f'<p>{contents}</p>\n'
             body += f'</div>\n'
+        body += '</div>\n'
 
     with open(output_file, "w") as f:
         f.write(wrap_in_html(f"Feedback Summary for {nominee_name}", body))
@@ -115,7 +120,8 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
-        body += f'<h2>AI Summary for this position:</h2>\n{summary}\n'
+        body += f'<h2><span id="ai-summary-toggle" class="toggle-button" onclick="toggleSection(\'ai-summary-content\')">&#9660;</span>AI Summary for this position:</h2>\n'
+        body += f'<div id="ai-summary-content">{summary}</div>\n'
         body += f'</div>\n'
 
     with open(output_file, "w") as f:

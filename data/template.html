@@ -9,7 +9,27 @@
         body {{
             padding: 2rem;
         }}
+        .toggle-button {{
+            cursor: pointer;
+            display: inline-block;
+            margin-right: 10px;
+            font-size: 1.2rem;
+            line-height: 1;
+        }}
     </style>
+    <script>
+        function toggleSection(sectionId) {{
+            const content = document.getElementById(sectionId);
+            const button = document.getElementById(sectionId + '-toggle');
+            if (content.style.display === 'none') {{
+                content.style.display = 'block';
+                button.innerHTML = '&#9660;'; // Down-pointing triangle
+            }} else {{
+                content.style.display = 'none';
+                button.innerHTML = '&#9654;'; // Right-pointing triangle
+            }}
+        }}
+    </script>
 </head>
 <body>
     <div class="container">
