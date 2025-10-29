@@ -8,6 +8,8 @@ from nominees import get_active_nominees, get_nominees_by_position, get_nominee_
 from summarize import are_summaries_enabled, get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
 from positions import get_position_short_name, get_position_full_name
 
+POSITION_COLOR = "#777777"
+
 def wrap_in_html(title, body):
     """Wraps the given body in a basic HTML structure."""
     with open("data/template.html", "r") as f:
@@ -23,7 +25,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     nominee_name = nominee_info["name"]
     position_full_name = get_position_full_name(position_short_name)
 
-    body = f'<h1>{nominee_name} – <a href="{position_short_name}.html">{position_full_name}</a></h1>\n'
+    body = f'<h1>{nominee_name} – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
     if summary:
         body += f'<h2>AI Summary:</h2>\n{summary}\n'
     if feedback_without_subject:
@@ -96,7 +98,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     output_filename = f"{position_short_name}.html"
     output_file = os.path.join(output_dir, output_filename)
 
-    body = f'<h1><a href="index.html">Nominees</a> for {position_full_name}:</h1>\n'
+    body = f'<h1><a href="index.html" style="color: {POSITION_COLOR}; text-decoration: none;">Nominees</a> for {position_full_name}:</h1>\n'
     body += "<ul>\n"
     for nominee_id in nominee_ids:
         nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
