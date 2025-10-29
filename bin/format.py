@@ -45,8 +45,10 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         body += '</div>\n'
     questionnaire = feedback_dict["questionnaires"].get(position_short_name)
     if questionnaire:
+        body += '<div style="background-color: #eeeeee;">\n'
         body += "<h2>Questionnaire:</h2>\n"
         body += f'<pre class="questionnaire">{questionnaire}</pre>\n'
+        body += '</div>\n'
     if feedback_with_subject:
         body += "<h2>Self Feedback:</h2>\n"
         for feedback in feedback_with_subject:
