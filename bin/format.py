@@ -140,7 +140,7 @@ def create_index_page(force_metadata=False):
     output_file = os.path.join(output_dir, "index.html")
 
     body = "<h1>Positions:</h1>\n"
-    body += "<ul>\n"
+    body += "<ul style=\"font-size: 1.5em;\">\n"
     for position_short_name in positions:
         position_full_name = get_position_full_name(position_short_name)
         body += f'<li><a href="{position_short_name}.html">{position_full_name}</a></li>\n'
