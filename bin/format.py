@@ -102,6 +102,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
 
     nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
     nominee_ids = nominees_by_position.get(position_short_name)
+    body = f'<h1><a href="index.html" style="color: {POSITION_COLOR}; text-decoration: none;">Nominees</a> for {position_full_name}:</h1>\n'
     if not nominee_ids:
         print(f"No nominees found for position {position_full_name}")
         return
@@ -109,14 +110,15 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     output_filename = f"{position_short_name}.html"
     output_file = os.path.join(output_dir, output_filename)
 
-    body = f'<h1><a href="index.html" style="color: {POSITION_COLOR}; text-decoration: none;">Nominees</a> for {position_full_name}:</h1>\n'
-    body += "<ul>\n"
+    body += '<div style="background-color: #ddeeff; padding: 1rem;">\n'
+    body += "<ul style=\"font-size: 1.2em;\">\n"
     for nominee_id in nominee_ids:
         nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
         nominee_name = nominee_info["name"]
         summary_file = f"{nominee_id}_{position_short_name}.html"
         body += f'<li><a href="{summary_file}">{nominee_name}</a></li>\n'
     body += "</ul>\n"
+    body += '</div>\n'
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
