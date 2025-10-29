@@ -8,22 +8,25 @@ from pathlib import Path
 from feedback_parser import parse_feedback
 from nominees import get_nominee_info, get_nominees_by_position, get_active_nominees
 
-# --- Functions ---
-def get_api_key():
-    """Gets the Gemini API key from a file or prompts the user."""
-    api_key_file = Path("data/gemini_api_key.txt")
-    if api_key_file.exists():
-        return api_key_file.read_text().strip()
-    else:
-        api_key = input("Please enter your Gemini API key: ")
-        api_key_file.parent.mkdir(exist_ok=True)
-        api_key_file.write_text(api_key)
-        return api_key
+
+GEMINI_API_KEY = None
+
+def get_gemini_api_key():
+    global GEMINI_API_KEY
+    if not GEMINI_API_KEY:
+        api_key_file = Path("data/gemini_api_key.txt")
+        if api_key_file.exists():
+            GEMINI_API_KEY = api_key_file.read_text().strip()
+        else:
+            GEMINI_API_KEY = input("Please enter your Gemini API key: ")
+            api_key_file.parent.mkdir(exist_ok=True)
+            api_key_file.write_text(GEMINI_API_KEY)
+    return GEMINI_API_KEY
 
 def get_ai_summary(prompt, use_pro_model=False):
     """Summarizes the feedback text using the Gemini API."""
     try:
-        api_key = get_api_key()
+        api_key = get_gemini_api_key()
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro-latest' if use_pro_model else 'gemini-flash-latest')
         response = model.generate_content(prompt)
