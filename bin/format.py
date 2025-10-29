@@ -27,8 +27,11 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
 
     body = f'<h1>{nominee_name} – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
     if summary:
+        body += f'<div style="background-color: #ffdddd;">\n'
         body += f'<h2>AI Summary:</h2>\n{summary}\n'
+        body += f'</div>\n'
     if feedback_without_subject:
+        body += '<div style="background-color: #ddffdd;">\n'
         body += "<h2>Community Feedback:</h2>\n"
         for feedback in feedback_without_subject:
             name = feedback["name"]
@@ -39,6 +42,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
             body += f'<p><a href="https://datatracker.ietf.org/person/{email}" class="feedback-author">{name}</a> <span class="feedback-date">({date})</span></p>\n'
             body += f'<p>{contents}</p>\n'
             body += f'</div>\n'
+        body += '</div>\n'
     questionnaire = feedback_dict["questionnaires"].get(position_short_name)
     if questionnaire:
         body += "<h2>Questionnaire:</h2>\n"
@@ -108,7 +112,9 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     body += "</ul>\n"
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
     if summary:
+        body += f'<div style="background-color: #ffdddd;">\n'
         body += f'<h2>AI Summary for this position:</h2>\n{summary}\n'
+        body += f'</div>\n'
 
     with open(output_file, "w") as f:
         f.write(wrap_in_html(f"Nominee Summary for {position_full_name}", body))
