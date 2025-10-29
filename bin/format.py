@@ -17,7 +17,7 @@ def _write_feedback(f, feedback_list):
         contents = feedback["feedback"]
         f.write(f'<span title="{date}"><a href="https://datatracker.ietf.org/person/{email}"><b>{name}</b></a></span>: {contents}\n')
 
-def create_summary_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position):
+def create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position):
     """Creates an HTML file with the summary and feedback."""
     feedback_with_subject = [item for item in feedback_list if "subject" in item]
     feedback_without_subject = [item for item in feedback_list if "subject" not in item]
@@ -42,7 +42,7 @@ def create_summary_for_nominee_and_position(summary, feedback_list, input_file, 
         f.write("</body>\n</html>")
     print(f"Successfully summarized {input_file} for {position} and saved to {output_file}")
 
-def create_summary_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     print(f"Creating summary for nominee {nominee_id}")
     output_dir = "data/summaries"
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
@@ -63,9 +63,9 @@ def create_summary_for_nominee(nominee_id, force_metadata=False, force_feedback=
         output_filename = f"{nominee_id}_{position}.html"
         output_file = os.path.join(output_dir, output_filename)
 
-        create_summary_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position)
+        create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position)
 
-def create_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
+def create_page_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     print(f"Creating summary for position {position}")
     output_dir = "data/summaries"
     if not os.path.exists(output_dir):
@@ -119,14 +119,14 @@ def create_overall_summary(force_metadata=False):
 
 def run_formatting(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, force_summarize=False):
     if position:
-        create_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+        create_page_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
     elif nominee_id:
-        create_summary_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+        create_page_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
     else:
         for nominee in get_active_nominees(force_metadata=force_metadata):
-            create_summary_for_nominee(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+            create_page_for_nominee(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
         for position in get_nominees_by_position(force_metadata=force_metadata):
-            create_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
+            create_page_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, force_summarize=force_summarize)
         create_overall_summary(force_metadata=force_metadata)
 
 if __name__ == "__main__":
