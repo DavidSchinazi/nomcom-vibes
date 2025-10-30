@@ -73,7 +73,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 def copy_logo():
     """Copies the logo to the data directory."""
     source_logo_path = "static/logo.jpg"
-    destination_logo_path = "output/logo.jpg"
+    destination_logo_path = "output/data/logo.jpg"
     if os.path.exists(source_logo_path):
         os.makedirs(os.path.dirname(destination_logo_path), exist_ok=True)
         shutil.copy(source_logo_path, destination_logo_path)
@@ -91,7 +91,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     nominee_name = nominee_info["name"]
     nominee_photo = nominee_info.get("photo")
     position_full_name = get_position_full_name(position_short_name)
-    body = '<a href="index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 70px;"/></a>'
+    body = '<a href="../index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 70px;"/></a>'
     if nominee_photo:
         body += f'<img src="{nominee_photo}" style="float: right; margin: 1rem;" width="150"/>\n'
     body += f'<h1 style="margin-top: 2rem;">{nominee_name} – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
@@ -142,7 +142,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
 
 def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     print(f"Creating summary for nominee {nominee_id}")
-    output_dir = "output"
+    output_dir = "output/data"
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
 
     # Make sure the parsed JSON is there.
@@ -166,13 +166,13 @@ def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=Fal
 def create_page_for_position(position_short_name, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     position_full_name = get_position_full_name(position_short_name)
     print(f"Creating summary for position {position_full_name}")
-    output_dir = "output"
+    output_dir = "output/data"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
     nominee_ids = nominees_by_position.get(position_short_name)
-    body = '<a href="index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 70px;"/></a>'
+    body = '<a href="../index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 70px;"/></a>'
     body += f'<h1 style="margin-top: 2rem;">{position_full_name}</h1>\n'
     if not nominee_ids:
         print(f"No nominees found for position {position_full_name}")
@@ -219,12 +219,12 @@ def create_index_page(force_metadata=False):
 
     output_file = os.path.join(output_dir, "index.html")
 
-    body = '<a href="index.html"><img src="logo.jpg" style="display: block; margin: 0 auto; height: 300px;"/></a>'
+    body = '<a href="index.html"><img src="data/logo.jpg" style="display: block; margin: 0 auto; height: 300px;"/></a>'
     body += "<ul style=\"font-size: 1.5em; list-style-type: none; text-align: center; padding-left: 0; margin-top: 2rem;\">\n"
     for position in sorted_positions:
         position_short_name = get_position_short_name(position['name'])
         position_full_name = get_position_full_name(position_short_name)
-        body += f'<li><a href="{position_short_name}.html">{position_full_name}</a></li>\n'
+        body += f'<li><a href="data/{position_short_name}.html">{position_full_name}</a></li>\n'
     body += "</ul>\n"
 
     with open(output_file, "w") as f:
