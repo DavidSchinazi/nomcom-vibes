@@ -10,11 +10,68 @@ from positions import get_position_short_name, get_position_full_name, get_posit
 
 POSITION_COLOR = "#777777"
 
+HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body {{
+            padding: 2rem;
+        }}
+        .toggle-button {{
+            cursor: pointer;
+            display: inline-block;
+            margin-right: 10px;
+            font-size: 1.2rem;
+            line-height: 1;
+        }}
+        .collapsible-content {{
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }}
+    </style>
+    <script>
+        function toggleSection(sectionId) {{
+            const content = document.getElementById(sectionId);
+            const button = document.getElementById(sectionId + '-toggle');
+            if (content.style.maxHeight) {{
+                content.style.maxHeight = null;
+                button.innerHTML = '&#9654;'; // Right-pointing triangle
+            }} else {{
+                content.style.maxHeight = content.scrollHeight + "px";
+                button.innerHTML = '&#9660;'; // Down-pointing triangle
+            }}
+        }}
+
+        window.addEventListener('resize', () => {{
+            const activeContents = document.querySelectorAll('.collapsible-content.active');
+            activeContents.forEach(content => {{
+                content.style.maxHeight = content.scrollHeight + "px";
+            }});
+        }});
+
+        window.addEventListener('load', () => {{
+            const activeContents = document.querySelectorAll('.collapsible-content.active');
+            activeContents.forEach(content => {{
+                content.style.maxHeight = content.scrollHeight + "px";
+            }});
+        }});
+    </script>
+</head>
+<body>
+    <div class="container">
+        {body}
+    </div>
+</body>
+</html>"""
+
 def wrap_in_html(title, body):
     """Wraps the given body in a basic HTML structure."""
-    with open("data/template.html", "r") as f:
-        template = f.read()
-    return template.format(title=title, body=body)
+    return HTML_TEMPLATE.format(title=title, body=body)
 
 def create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position_short_name):
     """Creates an HTML file with the summary and feedback."""
