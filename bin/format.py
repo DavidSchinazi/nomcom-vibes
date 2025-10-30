@@ -218,7 +218,7 @@ def create_index_page(force_metadata=False):
     output_file = os.path.join(output_dir, "index.html")
 
     body = '<a href="index.html"><img src="logo.jpg" style="display: block; margin: 0 auto; height: 300px;"/></a>'
-    body += "<ul style=\"font-size: 1.5em;\">\n"
+    body += "<ul style=\"font-size: 1.5em; list-style-type: none; text-align: center; padding-left: 0; margin-top: 2rem;\">\n"
     for position in sorted_positions:
         position_short_name = get_position_short_name(position['name'])
         position_full_name = get_position_full_name(position_short_name)
