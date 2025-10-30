@@ -10,11 +10,12 @@ from nominees import get_nominee_info, get_nominees_by_position, get_active_nomi
 
 
 GEMINI_SETTINGS = None
-GEMINI_SETTINGS_FILE = "data/gemini_settings.json"
+GEMINI_SETTINGS_FILE = "config/gemini_settings.json"
 
 def save_gemini_settings(settings):
     global GEMINI_SETTINGS
     GEMINI_SETTINGS = settings
+    os.makedirs(os.path.dirname(GEMINI_SETTINGS_FILE), exist_ok=True)
     with open(GEMINI_SETTINGS_FILE, "w") as f:
         json.dump(GEMINI_SETTINGS, f, indent=4)
 

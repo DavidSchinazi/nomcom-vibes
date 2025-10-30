@@ -11,7 +11,8 @@ SESSION_ID = None
 def get_session_id():
     global SESSION_ID
     if not SESSION_ID:
-        session_id_file = Path("data/session_id.txt")
+        session_id_file = Path("config/session_id.txt")
+        os.makedirs(os.path.dirname(session_id_file), exist_ok=True)
         if session_id_file.exists():
             SESSION_ID = session_id_file.read_text().strip()
         else:
