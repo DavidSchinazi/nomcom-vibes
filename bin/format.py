@@ -195,7 +195,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
-        body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-content-toggle" class="toggle-button">&#9660;</span>AI Summary for {position_full_name}</h1>\n'
+        body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-content-toggle" class="toggle-button">&#9660;</span>AI Summary</h1>\n'
         body += f'<div id="ai-summary-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">{summary}</div>\n'
         body += f'</div>\n'
 
