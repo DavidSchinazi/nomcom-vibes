@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#!/usr/bin/env python3
-
 import argparse
 import os
 import json
@@ -66,7 +64,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </script>
 </head>
 <body>
-<a href="index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 50px;"/></a>
     <div class="container">
         {body}
     </div>
@@ -95,7 +92,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     nominee_photo = nominee_info.get("photo")
     position_full_name = get_position_full_name(position_short_name)
 
-    body = ""
+    body = '<a href="index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 50px;"/></a>'
     if nominee_photo:
         body += f'<img src="{nominee_photo}" style="float: right; margin: 1rem;" width="150"/>\n'
     body += f'<h1>{nominee_name} – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
@@ -174,7 +171,8 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
 
     nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
     nominee_ids = nominees_by_position.get(position_short_name)
-    body = f'<h1><a href="index.html" style="color: {POSITION_COLOR}; text-decoration: none;">Nominees</a> for {position_full_name}</h1>\n'
+    body = '<a href="index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 50px;"/></a>'
+    body += f'<h1><a href="index.html" style="color: {POSITION_COLOR}; text-decoration: none;">Nominees</a> for {position_full_name}</h1>\n'
     if not nominee_ids:
         print(f"No nominees found for position {position_full_name}")
         return
@@ -220,7 +218,8 @@ def create_index_page(force_metadata=False):
 
     output_file = os.path.join(output_dir, "index.html")
 
-    body = "<h1><img src=\"logo.jpg\" style=\"height: 1em;\"/> NomCom Vibes</h1>\n"
+    body = '<a href="index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 50px;"/></a>'
+    body += "<h1>NomCom Vibes</h1>\n"
     body += "<ul style=\"font-size: 1.5em;\">\n"
     for position in sorted_positions:
         position_short_name = get_position_short_name(position['name'])
