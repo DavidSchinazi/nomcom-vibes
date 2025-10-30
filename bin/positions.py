@@ -62,7 +62,7 @@ def get_position_name(resource_uri, force_metadata=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
-    parser.add_argument("-a", "--force-all", action="store_true", help="Enable -m flag")
+    parser.add_argument("-a", "--force-all", action="store_true", help="Ignore cache and perform all operations from scratch")
     args = parser.parse_args()
 
     if args.force_all:

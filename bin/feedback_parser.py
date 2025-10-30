@@ -115,7 +115,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
-    parser.add_argument("-a", "--force-all", action="store_true", help="Enable -m, -f, and -p flags")
+    parser.add_argument("-a", "--force-all", action="store_true", help="Ignore cache and perform all operations from scratch")
     args = parser.parse_args()
 
     if args.force_all:
