@@ -121,12 +121,10 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
         nominee_name = nominee_info["name"]
         nominee_photo = nominee_info.get("photo")
         summary_file = f"{nominee_id}_{position_short_name}.html"
-        body += '<li style="display: flex; align-items: center; margin: 0; padding: 0.2rem 0;">'
         if nominee_photo:
-            body += f'<img src="{nominee_photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/>'
+            body += f'<li style="display: flex; align-items: center; margin: 0; padding: 0.2rem 0;"><a href="{summary_file}"><img src="{nominee_photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/></a><a href="{summary_file}">{nominee_name}</a></li>\n'
         else:
-            body += f'<img src="https://www.ietf.org/media/images/ietf-logo.original.png" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/>'
-        body += f'<a href="{summary_file}">{nominee_name}</a></li>\n'
+            body += f'<li style="display: flex; align-items: center; margin: 0; padding: 0.2rem 0;"><a href="{summary_file}"><img src="https://www.ietf.org/media/images/ietf-logo.original.png" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/></a><a href="{summary_file}">{nominee_name}</a></li>\n'
     body += "</ul>\n"
     body += '</div>\n'
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
