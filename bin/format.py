@@ -9,8 +9,6 @@ from nominees import get_active_nominees, get_nominees_by_position, get_nominee_
 from summarize import are_summaries_enabled, get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
 from positions import get_position_short_name, get_position_full_name, get_positions
 
-POSITION_COLOR = "#777777"
-
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,7 +93,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     datatracker_url = f"https://datatracker.ietf.org/person/{nominee_info['email']}"
     if nominee_photo:
         body += f'<a href="{datatracker_url}"><img src="{nominee_photo}" style="float: right; margin: 1rem;" width="150"/></a>\n'
-    body += f'<h1 style="margin-top: 2rem;"><a href="{datatracker_url}" style="text-decoration: none; color: inherit;">{nominee_name}</a> – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
+    body += f'<h1 style="margin-top: 2rem;"><a href="{datatracker_url}" style="text-decoration: none; color: inherit;">{nominee_name}</a> – <a href="{position_short_name}.html" style="color: inherit; text-decoration: none;">{position_full_name}</a></h1>\n'
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
         body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-content-toggle" class="toggle-button">&#9660;</span>AI Summary</h1>\n'
