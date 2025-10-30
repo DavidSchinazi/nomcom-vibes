@@ -144,9 +144,10 @@ def create_index_page(force_metadata=False):
         os.makedirs(output_dir)
 
     positions = get_positions(force_metadata=force_metadata)
-    iesg_positions = sorted([p for p in positions if p['is_iesg_position']], key=lambda p: p['name'])
-    non_iesg_positions = sorted([p for p in positions if not p['is_iesg_position']], key=lambda p: p['name'])
-    sorted_positions = non_iesg_positions + iesg_positions
+    iab_position = [p for p in positions if p['name'] == 'Internet Architecture Board, Member']
+    iesg_positions = sorted([p for p in positions if p['is_iesg_position'] and p['name'] != 'Internet Architecture Board, Member'], key=lambda p: p['name'])
+    non_iesg_positions = sorted([p for p in positions if not p['is_iesg_position'] and p['name'] != 'Internet Architecture Board, Member'], key=lambda p: p['name'])
+    sorted_positions = iab_position + non_iesg_positions + iesg_positions
 
     output_file = os.path.join(output_dir, "index.html")
 
