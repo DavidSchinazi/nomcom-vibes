@@ -124,7 +124,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
         if nominee_photo:
             body += f'<li><img src="{nominee_photo}" width="40" style="margin-right: 1rem;"/><a href="{summary_file}">{nominee_name}</a></li>\n'
         else:
-            body += f'<li><a href="{summary_file}">{nominee_name}</a></li>\n'
+            body += f'<li><img src="https://www.ietf.org/media/images/ietf-logo.original.png" width="40" style="margin-right: 1rem;"/><a href="{summary_file}">{nominee_name}</a></li>\n'
     body += "</ul>\n"
     body += '</div>\n'
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
