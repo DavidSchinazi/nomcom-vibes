@@ -45,8 +45,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
             date = feedback["date"]
             contents = feedback["feedback"]
             body += f'<div class="feedback">\n'
-            body += f'<p><a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}">{name}</a></p>\n'
-            body += f'<p>{contents}</p>\n'
+            body += f'<p><a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}">{name}</a>: {contents}</p>\n'
             body += f'</div>\n'
         body += '</div>\n'
         body += '</div>\n'
