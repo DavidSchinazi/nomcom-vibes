@@ -33,8 +33,7 @@ def save_html_feedback_for_nominee(nominee_id, force_feedback=False):
     response = requests.get(url, cookies={"sessionid": session_id})
     response.raise_for_status()
 
-    if not os.path.exists("data/feedback_html"):
-        os.makedirs("data/feedback_html")
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w") as f:
         f.write(response.text)
     print(f"Saved HTML feedback for nominee {nominee_id} to {output_file}")

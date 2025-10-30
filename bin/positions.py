@@ -44,6 +44,7 @@ def get_positions(force_metadata=False):
     response.raise_for_status()  # Raise an exception for HTTP errors
     positions_data = response.json()
 
+    os.makedirs(os.path.dirname(positions_file), exist_ok=True)
     with open(positions_file, "w") as f:
         json.dump(positions_data, f, indent=4)
     print(f"Positions data downloaded and saved to {positions_file}")

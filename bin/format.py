@@ -136,6 +136,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         body += '</div>\n'
         body += '</div>\n'
 
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w") as f:
         f.write(wrap_in_html(f"Feedback Summary for {nominee_name}", body))
     print(f"Successfully summarized {input_file} for {position_short_name} and saved to {output_file}")
@@ -201,6 +202,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
         body += f'<div id="ai-summary-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">{summary}</div>\n'
         body += f'</div>\n'
 
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w") as f:
         f.write(wrap_in_html(f"Nominee Summary for {position_full_name}", body))
     print(f"Successfully created summary for position {position_full_name} and saved to {output_file}")
@@ -227,6 +229,7 @@ def create_index_page(force_metadata=False):
         body += f'<li><a href="data/{position_short_name}.html">{position_full_name}</a></li>\n'
     body += "</ul>\n"
 
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w") as f:
         f.write(wrap_in_html("", body))
     print(f"Successfully created overall summary and saved to {output_file}")

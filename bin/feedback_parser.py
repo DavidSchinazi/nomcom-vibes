@@ -97,10 +97,8 @@ def parse_feedback(nominee_id, force_metadata=False, force_feedback=False, force
     nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
     result["nominee_info"] = nominee_info
 
-    output_dir = "data/feedback_json"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
     # Write the extracted data to a JSON file
+    os.makedirs(os.path.dirname(json_file), exist_ok=True)
     with open(output_file, "w") as json_file:
         json.dump(result, json_file, indent=4)
     print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")

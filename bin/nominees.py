@@ -26,6 +26,7 @@ def load_nominees(force_metadata=False):
     response.raise_for_status()  # Raise an exception for HTTP errors
     nominees_data = response.json()
 
+    os.makedirs(os.path.dirname(nominees_file), exist_ok=True)
     with open(nominees_file, "w") as f:
         json.dump(nominees_data, f, indent=4)
     print(f"Nominees data downloaded and saved to {nominees_file}")
@@ -124,6 +125,7 @@ def get_nominee_positions(force_metadata=False):
     response.raise_for_status()  # Raise an exception for HTTP errors
     nominee_positions_data = response.json()
 
+    os.makedirs(os.path.dirname(nominee_positions_file), exist_ok=True)
     with open(nominee_positions_file, "w") as f:
         json.dump(nominee_positions_data, f, indent=4)
     print(f"Nominee positions data downloaded and saved to {nominee_positions_file}")
