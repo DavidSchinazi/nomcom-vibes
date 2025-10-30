@@ -217,8 +217,7 @@ def create_index_page(force_metadata=False):
 
     output_file = os.path.join(output_dir, "index.html")
 
-    body = '<a href="index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 70px;"/></a>'
-    body += "<h1 style=\"margin-top: 2rem;\">NomCom Vibes</h1>\n"
+    body = '<a href="index.html"><img src="logo.jpg" style="display: block; margin: 0 auto; height: 300px;"/></a>'
     body += "<ul style=\"font-size: 1.5em;\">\n"
     for position in sorted_positions:
         position_short_name = get_position_short_name(position['name'])
@@ -227,7 +226,7 @@ def create_index_page(force_metadata=False):
     body += "</ul>\n"
 
     with open(output_file, "w") as f:
-        f.write(wrap_in_html("NomCom Summary", body))
+        f.write(wrap_in_html("", body))
     print(f"Successfully created overall summary and saved to {output_file}")
 
 
