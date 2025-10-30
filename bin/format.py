@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+#!/usr/bin/env python3
+
 import argparse
 import os
 import json
+import shutil
 from feedback_parser import parse_feedback
 from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info
 from summarize import are_summaries_enabled, get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
@@ -63,11 +66,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </script>
 </head>
 <body>
+<a href="index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 50px;"/></a>
     <div class="container">
         {body}
     </div>
 </body>
 </html>"""
+
+def copy_logo():
+    """Copies the logo to the data directory."""
+    source_logo_path = "static/logo.jpg"
+    destination_logo_path = "data/summaries/logo.jpg"
+    if os.path.exists(source_logo_path):
+        os.makedirs(os.path.dirname(destination_logo_path), exist_ok=True)
+        shutil.copy(source_logo_path, destination_logo_path)
 
 def wrap_in_html(title, body):
     """Wraps the given body in a basic HTML structure."""
@@ -208,7 +220,7 @@ def create_index_page(force_metadata=False):
 
     output_file = os.path.join(output_dir, "index.html")
 
-    body = "<h1>NomCom Vibes</h1>\n"
+    body = "<h1><img src=\"logo.jpg\" style=\"height: 1em;\"/> NomCom Vibes</h1>\n"
     body += "<ul style=\"font-size: 1.5em;\">\n"
     for position in sorted_positions:
         position_short_name = get_position_short_name(position['name'])
@@ -222,6 +234,7 @@ def create_index_page(force_metadata=False):
 
 
 def run_formatting(nominee_id=None, position_short_name=None, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
+    copy_logo()
     if position_short_name:
         create_page_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
     elif nominee_id:
