@@ -6,7 +6,7 @@ import json
 from feedback_parser import parse_feedback
 from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info
 from summarize import are_summaries_enabled, get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
-from positions import get_position_short_name, get_position_full_name
+from positions import get_position_short_name, get_position_full_name, get_positions
 
 POSITION_COLOR = "#777777"
 
@@ -143,12 +143,17 @@ def create_index_page(force_metadata=False):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    positions = get_nominees_by_position(force_metadata=force_metadata).keys()
+    positions = get_positions(force_metadata=force_metadata)
+    iesg_positions = sorted([p for p in positions if p['is_iesg_position']], key=lambda p: p['name'])
+    non_iesg_positions = sorted([p for p in positions if not p['is_iesg_position']], key=lambda p: p['name'])
+    sorted_positions = non_iesg_positions + iesg_positions
+
     output_file = os.path.join(output_dir, "index.html")
 
     body = "<h1>Positions:</h1>\n"
     body += "<ul style=\"font-size: 1.5em;\">\n"
-    for position_short_name in positions:
+    for position in sorted_positions:
+        position_short_name = get_position_short_name(position['name'])
         position_full_name = get_position_full_name(position_short_name)
         body += f'<li><a href="{position_short_name}.html">{position_full_name}</a></li>\n'
     body += "</ul>\n"
