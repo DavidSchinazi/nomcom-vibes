@@ -54,7 +54,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     if questionnaire:
         body += '<div style="background-color: #eeeeee;">\n'
         body += f'<h1 onclick="toggleSection(\'questionnaire-content\')" style="cursor: pointer;"><span id="questionnaire-content-toggle" class="toggle-button">&#9660;</span>Questionnaire:</h1>\n'
-        body += f'<div id="questionnaire-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;"><pre class="questionnaire">{questionnaire}</pre></div>\n'
+        body += f'<div id="questionnaire-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;"><pre class="questionnaire" style="white-space: pre-wrap; word-wrap: break-word;">{questionnaire}</pre></div>\n'
         body += '</div>\n'
     if feedback_with_subject:
         body += f'<h1 onclick="toggleSection(\'self-feedback-content\')" style="cursor: pointer;"><span id=\"self-feedback-content-toggle\" class=\"toggle-button\">&#9660;</span>Self Feedback:</h1>\n'
