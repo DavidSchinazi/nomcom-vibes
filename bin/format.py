@@ -121,6 +121,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         body += f'<div id="questionnaire-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;"><pre class="questionnaire" style="white-space: pre-wrap; word-wrap: break-word;">{questionnaire}</pre></div>\n'
         body += '</div>\n'
     if feedback_with_subject:
+        body += '<div style="background-color: #e0b0ff;">\n'
         body += f'<h1 onclick="toggleSection(\'self-feedback-content\')" style="cursor: pointer;"><span id=\"self-feedback-content-toggle\" class=\"toggle-button\">&#9660;</span>Self Feedback</h1>\n'
         body += '<div id="self-feedback-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">\n'
         for feedback in feedback_with_subject:
@@ -132,6 +133,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
             body += f'<p><a href="https://datatracker.ietf.org/person/{email}" class="feedback-author">{name}</a> <span class="feedback-date">({date})</span></p>\n'
             body += f'<p>{contents}</p>\n'
             body += f'</div>\n'
+        body += '</div>\n'
         body += '</div>\n'
 
     with open(output_file, "w") as f:
