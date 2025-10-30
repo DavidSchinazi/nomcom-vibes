@@ -171,7 +171,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
     nominee_ids = nominees_by_position.get(position_short_name)
     body = '<a href="index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 70px;"/></a>'
-    body += f'<h1 style="margin-top: 2rem;"><a href="index.html" style="color: {POSITION_COLOR}; text-decoration: none;">Nominees</a> for {position_full_name}</h1>\n'
+    body += f'<h1 style="margin-top: 2rem;">{position_full_name}</h1>\n'
     if not nominee_ids:
         print(f"No nominees found for position {position_full_name}")
         return
