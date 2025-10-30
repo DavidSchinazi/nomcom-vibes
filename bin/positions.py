@@ -35,7 +35,6 @@ def get_positions(force_metadata=False):
 
     positions_file = "data/positions.json"
     if not force_metadata and os.path.exists(positions_file):
-        print(f"'{positions_file}' already exists. Skipping download.")
         with open(positions_file, "r") as f:
             POSITIONS_DATA = json.load(f)['objects']
             return POSITIONS_DATA
