@@ -55,7 +55,7 @@ def get_position_name(resource_uri, force_metadata=False):
     positions = get_positions(force_metadata=force_metadata)
     for position in positions:
         if position['resource_uri'] == resource_uri:
-            return get_position_short_name(position['name'])
+            return position['name']
     return None
 
 
