@@ -23,9 +23,13 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
 
     nominee_info = feedback_dict["nominee_info"]
     nominee_name = nominee_info["name"]
+    nominee_photo = nominee_info.get("photo")
     position_full_name = get_position_full_name(position_short_name)
 
-    body = f'<h1>{nominee_name} – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
+    body = ""
+    if nominee_photo:
+        body += f'<img src="{nominee_photo}" style="float: right; margin: 1rem;" width="150"/>\n'
+    body += f'<h1>{nominee_name} – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
         body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-toggle" class="toggle-button">&#9660;</span>AI Summary:</h1>\n'
