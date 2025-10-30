@@ -115,16 +115,18 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     output_file = os.path.join(output_dir, output_filename)
 
     body += '<div style="background-color: #ddeeff; padding: 1rem;">\n'
-    body += "<ul style=\"font-size: 1.2em; list-style-type: none;\">\n"
+    body += "<ul style=\"font-size: 1.2em; list-style-type: none; padding-left: 0;\">\n"
     for nominee_id in nominee_ids:
         nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
         nominee_name = nominee_info["name"]
         nominee_photo = nominee_info.get("photo")
         summary_file = f"{nominee_id}_{position_short_name}.html"
+        body += '<li style="display: flex; align-items: center; margin: 0; padding: 0.2rem 0;">'
         if nominee_photo:
-            body += f'<li><img src="{nominee_photo}" width="40" style="margin-right: 1rem;"/><a href="{summary_file}">{nominee_name}</a></li>\n'
+            body += f'<img src="{nominee_photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/>'
         else:
-            body += f'<li><img src="https://www.ietf.org/media/images/ietf-logo.original.png" width="40" style="margin-right: 1rem;"/><a href="{summary_file}">{nominee_name}</a></li>\n'
+            body += f'<img src="https://www.ietf.org/media/images/ietf-logo.original.png" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/>'
+        body += f'<a href="{summary_file}">{nominee_name}</a></li>\n'
     body += "</ul>\n"
     body += '</div>\n'
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
