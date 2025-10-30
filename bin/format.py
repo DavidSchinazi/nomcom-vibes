@@ -92,9 +92,10 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     nominee_photo = nominee_info.get("photo")
     position_full_name = get_position_full_name(position_short_name)
     body = '<a href="../index.html"><img src="logo.jpg" style="position: absolute; top: 1rem; left: 1rem; width: 70px;"/></a>'
+    datatracker_url = f"https://datatracker.ietf.org/person/{nominee_info['email']}"
     if nominee_photo:
-        body += f'<img src="{nominee_photo}" style="float: right; margin: 1rem;" width="150"/>\n'
-    body += f'<h1 style="margin-top: 2rem;">{nominee_name} – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
+        body += f'<a href="{datatracker_url}"><img src="{nominee_photo}" style="float: right; margin: 1rem;" width="150"/></a>\n'
+    body += f'<h1 style="margin-top: 2rem;"><a href="{datatracker_url}" style="text-decoration: none; color: inherit;">{nominee_name}</a> – <a href="{position_short_name}.html" style="color: {POSITION_COLOR}; text-decoration: none;">{position_full_name}</a></h1>\n'
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
         body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-content-toggle" class="toggle-button">&#9660;</span>AI Summary</h1>\n'
