@@ -73,7 +73,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 def copy_logo():
     """Copies the logo to the data directory."""
     source_logo_path = "static/logo.jpg"
-    destination_logo_path = "data/summaries/logo.jpg"
+    destination_logo_path = "output/logo.jpg"
     if os.path.exists(source_logo_path):
         os.makedirs(os.path.dirname(destination_logo_path), exist_ok=True)
         shutil.copy(source_logo_path, destination_logo_path)
@@ -142,7 +142,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
 
 def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     print(f"Creating summary for nominee {nominee_id}")
-    output_dir = "data/summaries"
+    output_dir = "output"
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
 
     # Make sure the parsed JSON is there.
@@ -166,7 +166,7 @@ def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=Fal
 def create_page_for_position(position_short_name, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     position_full_name = get_position_full_name(position_short_name)
     print(f"Creating summary for position {position_full_name}")
-    output_dir = "data/summaries"
+    output_dir = "output"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -207,7 +207,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
 
 
 def create_index_page(force_metadata=False):
-    output_dir = "data/summaries"
+    output_dir = "output"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
