@@ -49,5 +49,12 @@ def save_all_html_feedback(force_metadata=False, force_feedback=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
+    parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
+    parser.add_argument("-a", "--force-all", action="store_true", help="Enable -m and -f flags")
     args = parser.parse_args()
-    save_all_html_feedback(force_metadata=args.force_metadata)
+
+    if args.force_all:
+        args.force_metadata = True
+        args.force_feedback = True
+
+    save_all_html_feedback(force_metadata=args.force_metadata, force_feedback=args.force_feedback)

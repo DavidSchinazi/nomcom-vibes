@@ -171,10 +171,14 @@ def get_nominees_by_position(force_metadata=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
+    parser.add_argument("-a", "--force-all", action="store_true", help="Enable -m flag")
     parser.add_argument("--info", action="store_true", help="Print info on each nominee, sorted.")
     parser.add_argument("--by-position", action="store_true", help="Print nominees by position.")
     parser.add_argument("nominee_id", nargs='?', help="Get info about a specific nominee")
     args = parser.parse_args()
+
+    if args.force_all:
+        args.force_metadata = True
 
     if args.info:
         print_nominee_info(force_metadata=args.force_metadata)
