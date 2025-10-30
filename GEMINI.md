@@ -4,4 +4,5 @@
 * Always add hashbang to all python files
 
 ## Safeguards
-* Do not every directly modify files in the data/ directory
+* Do not directly modify files in the config/, data/, and static/ directories
+* Do not use the git command
