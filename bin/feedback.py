@@ -16,6 +16,17 @@ def get_session_id():
         if session_id_file.exists():
             SESSION_ID = session_id_file.read_text().strip()
         else:
+            print("\nHello, and welcome to NomCom Vibes!\n")
+            print("In order to download confidential NomCom feedback, this tool needs your IETF datatracker cookie.")
+            print("To gather it, start your favorite browser and open Developer Tools.")
+            print("For most browsers, you can do that by pressing Cmd-Option-I or Ctrl-Shift-I.")
+            print("Then navigate to the NomCom private page at:\n")
+            print("https://datatracker.ietf.org/nomcom/2025/private/\n")
+            print("You will need to log in and enter the NomCom private key if you haven't already.")
+            print("Once you're able to see the NomCom private area, use Developer Tools to check HTTP headers.")
+            print("You'll need to find either the \"Cookie\" header on the request, or the \"Set-Cookie\" header on the response.")
+            print("You'll find multiple cookies there, and the one we need is \"sessionid\".")
+            print("For example, it'll look like `sessionid=k5swyy3pnvstettpnvbw63kwnfrgk4zb;`.\n")
             SESSION_ID = input("Please enter your IETF Datatracker session ID: ")
             session_id_file.parent.mkdir(exist_ok=True)
             session_id_file.write_text(SESSION_ID)
