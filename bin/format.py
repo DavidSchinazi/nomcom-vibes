@@ -96,8 +96,8 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         body += f'<a href="{datatracker_url}"><img src="{nominee_photo}" style="float: right; margin: 1rem;" width="150"/></a>\n'
     body += f'<h1 style="margin-top: 2rem;"><a href="{datatracker_url}" style="text-decoration: none; color: inherit;">{nominee_name}</a> – <a href="{position_short_name}.html" style="color: inherit; text-decoration: none;">{position_full_name}</a></h1>\n'
     body += '<div style="background-color: #ddffff;">\n'
-    body += f'<h1 onclick="toggleSection(\'candidate-info-content\')" style="cursor: pointer;"><span id="candidate-info-content-toggle" class="toggle-button">&#9660;</span>Candidate Information</h1>\n'
-    body += '<div id="candidate-info-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">\n'
+    body += f'<h1 onclick="toggleSection(\'nominee-info-content\')" style="cursor: pointer;"><span id="nominee-info-content-toggle" class="toggle-button">&#9660;</span>Nominee Information</h1>\n'
+    body += '<div id="nominee-info-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">\n'
     pronouns = nominee_info.get("pronouns_freetext", "")
     if not pronouns:
         try:
