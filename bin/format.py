@@ -113,6 +113,12 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         body += f'<b>Biography</b>: {biography}<br/>\n'
     body += f'<b>Meetings Attended</b>: {nominee_info["num_meetings_attended"]}<br/>\n'
     body += f'<b>Documents Written</b>: {nominee_info["num_drafts"]}<br/>\n'
+    other_positions = [
+        get_position_full_name(p) for p, state in nominee_info["positions"].items()
+        if state == "accepted" and p != position_short_name
+    ]
+    if other_positions:
+        body += f'<b>Also Accepted Nominations For</b>: {", ".join(other_positions)}<br/>\n'
     body += '</div>\n'
     body += '</div>\n'
     if summary:
