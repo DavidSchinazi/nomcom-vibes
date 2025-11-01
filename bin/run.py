@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 from format import run_formatting
 
 if __name__ == "__main__":
@@ -30,3 +31,7 @@ if __name__ == "__main__":
             position_short_name = args.identifier
 
     run_formatting(nominee_id=nominee_id, position_short_name=position_short_name, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, redo_summaries=args.redo_summaries, summaries_forced=args.summaries_forced)
+
+    print(f"\nDone. You can now navigate to the result at:\n")
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "output", "index.html")
+    print(f"file://{path}\n")
