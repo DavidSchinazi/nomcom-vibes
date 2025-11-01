@@ -9,6 +9,7 @@ NOMINEES_DATA = None
 NOMINEE_POSITIONS_DATA = None
 ACTIVE_NOMINEES_DATA = None
 NOMINEES_BY_POSITION_DATA = None
+EMAILS_TO_PEOPLE_IDS = None
 
 def load_nominees(force_metadata=False):
     global NOMINEES_DATA
@@ -33,14 +34,37 @@ def load_nominees(force_metadata=False):
     NOMINEES_DATA = nominees_data['objects']
     return NOMINEES_DATA
 
-def get_person_info(person_id, force_metadata=False):
+def get_person_id_from_email(email, force_metadata=False):
+    global EMAILS_TO_PEOPLE_IDS
+    emails_file = "data/emails.json"
+    if not EMAILS_TO_PEOPLE_IDS:
+        EMAILS_TO_PEOPLE_IDS = {}
+        if not force_metadata and os.path.exists(emails_file):
+            with open(emails_file, "r") as f:
+                EMAILS_TO_PEOPLE_IDS = json.load(f)
+    if email in EMAILS_TO_PEOPLE_IDS:
+        return EMAILS_TO_PEOPLE_IDS[email]
+
+    url = f'https://datatracker.ietf.org/api/v1/person/email/{email}/'
+    response = requests.get(url)
+    response.raise_for_status()
+    email_data = response.json()
+    person_path = email_data['person']
+    person_id = person_path.strip('/').split('/')[-1]
+    EMAILS_TO_PEOPLE_IDS[email] = person_id
+    os.makedirs(os.path.dirname(emails_file), exist_ok=True)
+    with open(emails_file, "w") as f:
+        json.dump(EMAILS_TO_PEOPLE_IDS, f, indent=4)
+    return person_id
+
+def get_person_info_from_id(person_id, force_metadata=False):
     person_file = f"data/persons/{person_id}.json"
 
     if not force_metadata and os.path.exists(person_file):
         with open(person_file, "r") as f:
             return json.load(f)
 
-    url = f'https://datatracker.ietf.org/api/v1/person/{person_id}/'
+    url = f'https://datatracker.ietf.org/api/v1/person/person/{person_id}/'
     response = requests.get(url)
     response.raise_for_status()
     person_data = response.json()
@@ -51,6 +75,9 @@ def get_person_info(person_id, force_metadata=False):
     print(f"Person data downloaded and saved to {person_file}")
 
     return person_data
+
+def get_person_info_from_email(email, force_metadata=False):
+    return get_person_info_from_id(get_person_id_from_email(email, force_metadata=force_metadata), force_metadata=force_metadata)
 
 def get_nominee_info(nominee_id, force_metadata=False):
     nominee_file = f"data/nominees/{nominee_id}.json"
@@ -67,14 +94,9 @@ def get_nominee_info(nominee_id, force_metadata=False):
         raise Exception(f'Nominee with id {nominee_id} not found')
 
     email_path = nominee['email']
-    url = f'https://datatracker.ietf.org{email_path}'
-    response = requests.get(url)
-    response.raise_for_status()
-    email_data = response.json()
-    person_path = email_data['person']
-    person_id = person_path.strip('/').split('/')[-1]
-
-    nominee_info = get_person_info(person_id, force_metadata=force_metadata)
+    email = email_path.strip('/').split('/')[-1]
+    person_id = get_person_id_from_email(email, force_metadata=force_metadata)
+    nominee_info = get_person_info_from_id(person_id, force_metadata=force_metadata)
 
     url = f'https://datatracker.ietf.org/api/v1/meeting/attended/?person={nominee_info["id"]}&limit=1'
     response = requests.get(url)
@@ -82,14 +104,14 @@ def get_nominee_info(nominee_id, force_metadata=False):
     attended_data = response.json()
     nominee_info['num_meetings_attended'] = attended_data['meta']['total_count']
 
-    url = f'https://datatracker.ietf.org/api/v1/doc/documentauthor/?email={email_data["address"]}'
+    url = f'https://datatracker.ietf.org/api/v1/doc/documentauthor/?email={email}'
     response = requests.get(url)
     response.raise_for_status()
     drafts_data = response.json()
     nominee_info['num_drafts'] = drafts_data['meta']['total_count']
 
     nominee_info['nominee_id'] = nominee_id
-    nominee_info['email'] = email_data['address']
+    nominee_info['email'] = email
     nominee_positions_data = get_nominee_positions(force_metadata=force_metadata)
     positions = {}
     for r in nominee['nominee_position']:
