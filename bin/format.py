@@ -109,6 +109,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         body += f'<b>Pronouns</b>: {pronouns}<br/>\n'
     biography = nominee_info.get("biography")
     if biography:
+        biography = biography.replace("\n", "<br/>")
         body += f'<b>Biography</b>: {biography}<br/>\n'
     body += f'<b>Meetings Attended</b>: {nominee_info["num_meetings_attended"]}<br/>\n'
     body += f'<b>Documents Written</b>: {nominee_info["num_drafts"]}<br/>\n'
