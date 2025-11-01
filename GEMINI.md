@@ -7,3 +7,4 @@
 ## Safeguards
 * Do not directly modify files in the config/, data/, and static/ directories
 * Do not use the git command
+* Do not delete any files
