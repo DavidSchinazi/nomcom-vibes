@@ -33,11 +33,25 @@ def load_nominees(force_metadata=False):
     NOMINEES_DATA = nominees_data['objects']
     return NOMINEES_DATA
 
-def get_person_info(person_path):
+def get_person_info(person_path, force_metadata=False):
+    person_id = person_path.strip('/').split('/')[-1]
+    person_file = f"data/persons/{person_id}.json"
+
+    if not force_metadata and os.path.exists(person_file):
+        with open(person_file, "r") as f:
+            return json.load(f)
+
     url = f'https://datatracker.ietf.org{person_path}'
     response = requests.get(url)
     response.raise_for_status()
-    return response.json()
+    person_data = response.json()
+
+    os.makedirs(os.path.dirname(person_file), exist_ok=True)
+    with open(person_file, "w") as f:
+        json.dump(person_data, f, indent=4)
+    print(f"Person data downloaded and saved to {person_file}")
+
+    return person_data
 
 def get_nominee_info(nominee_id, force_metadata=False):
     nominee_file = f"data/nominees/{nominee_id}.json"
@@ -60,7 +74,7 @@ def get_nominee_info(nominee_id, force_metadata=False):
     email_data = response.json()
     person_path = email_data['person']
 
-    nominee_info = get_person_info(person_path)
+    nominee_info = get_person_info(person_path, force_metadata=force_metadata)
 
     url = f'https://datatracker.ietf.org/api/v1/meeting/attended/?person={nominee_info["id"]}&limit=1'
     response = requests.get(url)
