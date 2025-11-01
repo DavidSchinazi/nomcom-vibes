@@ -95,6 +95,25 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     if nominee_photo:
         body += f'<a href="{datatracker_url}"><img src="{nominee_photo}" style="float: right; margin: 1rem;" width="150"/></a>\n'
     body += f'<h1 style="margin-top: 2rem;"><a href="{datatracker_url}" style="text-decoration: none; color: inherit;">{nominee_name}</a> – <a href="{position_short_name}.html" style="color: inherit; text-decoration: none;">{position_full_name}</a></h1>\n'
+    body += '<div style="background-color: #ddffff;">\n'
+    body += f'<h1 onclick="toggleSection(\'candidate-info-content\')" style="cursor: pointer;"><span id="candidate-info-content-toggle" class="toggle-button">&#9660;</span>Candidate Information</h1>\n'
+    body += '<div id="candidate-info-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">\n'
+    pronouns = nominee_info.get("pronouns_freetext", "")
+    if not pronouns:
+        try:
+            pronouns_list = json.loads(nominee_info.get("pronouns_selectable", "[]").replace("'", '"'))
+            pronouns = ", ".join(pronouns_list)
+        except json.JSONDecodeError:
+            pronouns = ""
+    if pronouns:
+        body += f'<b>Pronouns</b>: {pronouns}<br/>\n'
+    biography = nominee_info.get("biography")
+    if biography:
+        body += f'<b>Biography</b>: {biography}<br/>\n'
+    body += f'<b>Meetings Attended</b>: {nominee_info["num_meetings_attended"]}<br/>\n'
+    body += f'<b>Documents Written</b>: {nominee_info["num_drafts"]}<br/>\n'
+    body += '</div>\n'
+    body += '</div>\n'
     if summary:
         body += f'<div style="background-color: #ffdddd;">\n'
         body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-content-toggle" class="toggle-button">&#9660;</span>AI Summary</h1>\n'
