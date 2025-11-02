@@ -12,7 +12,7 @@ proof of access to the NomCom private key.
 First you'll need to install derpendencies via:
 
 ```
-python3 -m pip install bs4 requests
+python3 -m pip install bs4 lxml requests
 ```
 
 Then you can run the tool via:
