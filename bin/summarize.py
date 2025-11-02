@@ -3,7 +3,6 @@
 import re
 import os
 import json
-import google.generativeai as genai
 from pathlib import Path
 from feedback_parser import parse_feedback
 from nominees import get_nominee_info, get_nominees_by_position, get_active_nominees
@@ -64,6 +63,7 @@ def get_ai_summary(prompt, use_pro_model=False, summaries_forced=None):
     """Summarizes the feedback text using the Gemini API."""
     try:
         api_key = get_gemini_api_key(summaries_forced=summaries_forced)
+        import google.generativeai as genai
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro-latest' if use_pro_model else 'gemini-flash-latest')
         response = model.generate_content(prompt)
