@@ -112,7 +112,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         biography = biography.replace("\n", "<br/>")
         body += f'<b>Biography</b>: {biography}<br/>\n'
     body += f'<b>Meetings Attended</b>: {nominee_info["num_meetings_attended"]}<br/>\n'
-    body += f'<b>Documents Written</b>: {nominee_info["num_drafts"]}<br/>\n'
+    body += f'<b>Co-authored</b>: {nominee_info["num_rfcs"]} RFCs, {nominee_info["num_wg_drafts"]} WG Drafts, {nominee_info["num_individual_drafts"]} Individual Drafts<br/>\n'
     other_positions = [
         f'<a href="{nominee_info["nominee_id"]}_{p}.html">{get_position_full_name(p)}</a>'
         for p, state in nominee_info["positions"].items()

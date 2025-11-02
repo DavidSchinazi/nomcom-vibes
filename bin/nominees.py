@@ -104,11 +104,25 @@ def get_nominee_info(nominee_id, force_metadata=False):
     attended_data = response.json()
     nominee_info['num_meetings_attended'] = attended_data['meta']['total_count']
 
-    url = f'https://datatracker.ietf.org/api/v1/doc/documentauthor/?email={email}'
+    url = f'https://datatracker.ietf.org/api/v1/doc/documentauthor/?email={email}&limit=1000'
     response = requests.get(url)
     response.raise_for_status()
     drafts_data = response.json()
-    nominee_info['num_drafts'] = drafts_data['meta']['total_count']
+    num_individual_drafts = 0
+    num_wg_drafts = 0
+    num_rfcs = 0
+    for document in drafts_data['objects']:
+        document_path = document['document']
+        if document_path.startswith('/api/v1/doc/document/rfc'):
+            num_rfcs += 1
+        elif document_path.startswith('/api/v1/doc/document/draft-ietf-'):
+            num_wg_drafts += 1
+        elif document_path.startswith('/api/v1/doc/document/draft-'):
+            num_individual_drafts += 1
+    nominee_info['num_documents'] = drafts_data['meta']['total_count']
+    nominee_info['num_individual_drafts'] = num_individual_drafts
+    nominee_info['num_wg_drafts'] = num_wg_drafts
+    nominee_info['num_rfcs'] = num_rfcs
 
     nominee_info['nominee_id'] = nominee_id
     nominee_info['email'] = email
@@ -139,13 +153,13 @@ def print_nominee_info(force_metadata=False):
         nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
         name = nominee_info['name']
         meetings_attended = nominee_info['num_meetings_attended']
-        num_drafts = nominee_info['num_drafts']
-        nominee_stats.append({'name': name, 'meetings': meetings_attended, 'drafts': num_drafts})
+        num_documents = nominee_info['num_documents']
+        nominee_stats.append({'name': name, 'meetings': meetings_attended, 'documents': num_documents})
 
-    nominee_stats.sort(key=lambda x: x['meetings'] + x['drafts'], reverse=True)
+    nominee_stats.sort(key=lambda x: x['meetings'] + x['documents'], reverse=True)
     max_name_len = max(len(item['name']) for item in nominee_stats)
     for item in nominee_stats:
-        print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings, {item['drafts']:>3} drafts")
+        print(f"{item['name']:>{max_name_len}}: {item['meetings']:>3} meetings, {item['documents']:>3} documents")
     print("We have a total of {} nominees.".format(len(nominees_data)))
 
 def get_nominee_positions(force_metadata=False):
