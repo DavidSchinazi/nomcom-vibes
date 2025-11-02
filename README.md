@@ -18,5 +18,7 @@ python3 -m pip install bs4 lxml requests
 Then you can run the tool via:
 
 ```
+git clone https://github.com/DavidSchinazi/nomcom-vibes
+cd nomcom-vibes
 ./bin/run.py
 ```
