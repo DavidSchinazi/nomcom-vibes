@@ -82,6 +82,13 @@ def get_position_name(resource_uri, force_metadata=False):
             return position['name']
     return None
 
+def get_topic_id_from_position_name(position_full_name, force_metadata=False):
+    topics = get_topics(force_metadata=force_metadata)
+    for topic in topics:
+        if position_full_name in topic['subject']:
+            return topic['id']
+    return None
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
