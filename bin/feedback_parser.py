@@ -6,8 +6,77 @@ import re
 import os
 import sys
 from nominees import get_active_nominees, get_nominee_info
-from positions import get_position_short_name
-from feedback import save_html_feedback_for_nominee
+from positions import get_position_short_name, get_topic_id_from_position_name
+from feedback import save_html_feedback_for_nominee, save_html_feedback_for_position
+
+def parse_feedback_for_position(position_name, force_metadata=False, force_feedback=False, force_parse=False):
+    save_html_feedback_for_position(position_name, force_feedback=force_feedback)
+    topic_id = get_topic_id_from_position_name(position_name, force_metadata=force_metadata)
+    input_file = f"data/feedback_html/position_{topic_id}.html"
+    output_file = f"data/feedback_json/position_{topic_id}.json"
+    if os.path.exists(output_file) and not force_parse:
+        with open(output_file, "r", encoding="utf-8") as json_file:
+            result = json.load(json_file)
+        return result
+
+    # Read the HTML file
+    with open(input_file, "r", encoding="utf-8") as f:
+        html_content = f.read()
+
+    # Parse the HTML content
+    soup = BeautifulSoup(html_content, "lxml")
+
+    # Find the active tab pane which contains the feedback comments
+    comment_tab_pane = soup.find("div", {"id": "comment", "role": "tabpanel", "class": "tab-pane active"})
+
+    feedback_data = {}
+
+    if comment_tab_pane:
+        # Find all feedback entries within the comment tab pane
+        feedback_entries = comment_tab_pane.find_all("dl", class_="row")
+
+        for entry in feedback_entries:
+            data = {}
+            dts = entry.find_all("dt")
+            for dt in dts:
+                dt_text = dt.text.strip()
+                dd = dt.find_next_sibling("dd")
+                if dd:
+                    dd_text = dd.text.strip()
+                    if "From" in dt_text:
+                        if len(dd.contents) > 0:
+                            name = dd.contents[0].strip().replace('<', '').strip()
+                            data['name'] = name
+                        email_tag = dd.find("a")
+                        if email_tag and "mailto:" in email_tag.get("href", ""):
+                            data["email"] = email_tag.text.strip()
+                    elif "Date" in dt_text:
+                        data["date"] = dd_text
+                    elif "Nominees" in dt_text:
+                        data["nominee"] = dd_text
+                    elif "Feedback" in dt_text:
+                        pre_tag = dd.find("pre")
+                        if pre_tag:
+                            data["feedback"] = pre_tag.text.strip()
+                    elif "Subject" in dt_text:
+                        data["subject"] = dd_text
+
+            if data:
+                nominee = data.pop("nominee", "No nominee specified")
+                if nominee not in feedback_data:
+                    feedback_data[nominee] = []
+                feedback_data[nominee].append(data)
+
+    result = {}
+    result["feedback"] = feedback_data
+
+    # Write the extracted data to a JSON file
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    with open(output_file, "w", encoding="utf-8") as json_file:
+        json.dump(result, json_file, indent=4)
+    print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")
+
+    return result
 
 def parse_feedback_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False):
     save_html_feedback_for_nominee(nominee_id, force_feedback=force_feedback)
