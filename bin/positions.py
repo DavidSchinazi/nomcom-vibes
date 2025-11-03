@@ -5,6 +5,7 @@ import json
 import os
 
 POSITIONS_DATA = None
+TOPICS_DATA = None
 
 POSITION_SHORT_NAMES = {
     "Applications and Real Time (ART) AD": "ART",
@@ -51,6 +52,29 @@ def get_positions(force_metadata=False):
     POSITIONS_DATA = positions_data['objects']
     return POSITIONS_DATA
 
+def get_topics(force_metadata=False):
+    global TOPICS_DATA
+    if TOPICS_DATA:
+        return TOPICS_DATA
+
+    topics_file = "data/topics.json"
+    if not force_metadata and os.path.exists(topics_file):
+        with open(topics_file, "r", encoding="utf-8") as f:
+            TOPICS_DATA = json.load(f)['objects']
+            return TOPICS_DATA
+
+    url = "https://datatracker.ietf.org/api/v1/nomcom/topic/?nomcom=16&limit=1000"
+    response = requests.get(url)
+    response.raise_for_status()  # Raise an exception for HTTP errors
+    topics_data = response.json()
+
+    os.makedirs(os.path.dirname(topics_file), exist_ok=True)
+    with open(topics_file, "w", encoding="utf-8") as f:
+        json.dump(topics_data, f, indent=4)
+    print(f"Topics data downloaded and saved to {topics_file}")
+    TOPICS_DATA = topics_data['objects']
+    return TOPICS_DATA
+
 def get_position_name(resource_uri, force_metadata=False):
     positions = get_positions(force_metadata=force_metadata)
     for position in positions:
@@ -65,3 +89,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     get_positions(force_metadata=args.force_metadata)
+    get_topics(force_metadata=args.force_metadata)
