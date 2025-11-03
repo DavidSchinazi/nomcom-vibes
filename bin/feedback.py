@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 from nominees import get_active_nominees
-from positions import get_topic_id_from_position_name
+from positions import get_topic_id_from_position_name, get_positions
 
 SESSION_ID = None
 
@@ -77,6 +77,8 @@ def save_all_html_feedback(force_metadata=False, force_feedback=False):
     """Saves HTML feedback for all nominees."""
     for nominee in get_active_nominees(force_metadata=force_metadata):
         save_html_feedback_for_nominee(nominee["id"], force_feedback=force_feedback)
+    for position in get_positions(force_metadata=force_metadata):
+        save_html_feedback_for_position(position["name"], force_feedback=force_feedback)
 
 
 if __name__ == "__main__":
