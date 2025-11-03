@@ -4,7 +4,7 @@ import re
 import os
 import json
 from pathlib import Path
-from feedback_parser import parse_feedback
+from feedback_parser import parse_feedback_for_nominee
 from nominees import get_nominee_info, get_nominees_by_position, get_active_nominees
 from positions import get_position_full_name
 
@@ -86,7 +86,7 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
         return None
     nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
     nominee_name = nominee_info['name']
-    feedback_dict = parse_feedback(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
+    feedback_dict = parse_feedback_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
 
     feedback_by_position = feedback_dict.get("feedback", {})
     feedback_list = feedback_by_position.get(position, [])
@@ -136,7 +136,7 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
     for nominee_id in nominee_ids:
         nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
         all_feedback_text += f"\n\n--- Feedback for {nominee_info['name']} ---\n\n"
-        feedback_dict = parse_feedback(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
+        feedback_dict = parse_feedback_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
         feedback_by_position = feedback_dict.get("feedback", {})
         feedback_list = feedback_by_position.get(position, [])
 

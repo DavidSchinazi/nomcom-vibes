@@ -5,7 +5,7 @@ import os
 import json
 import shutil
 from feedback import get_session_id
-from feedback_parser import parse_feedback
+from feedback_parser import parse_feedback_for_nominee
 from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info, get_person_info_from_email
 from summarize import are_summaries_enabled, get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
 from positions import get_position_short_name, get_position_full_name, get_positions
@@ -181,7 +181,7 @@ def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=Fal
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
 
     # Make sure the parsed JSON is there.
-    parse_feedback(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
+    parse_feedback_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
