@@ -14,12 +14,12 @@ def parse_feedback(nominee_id, force_metadata=False, force_feedback=False, force
     input_file = f"data/feedback_html/{nominee_id}.html"
     output_file = f"data/feedback_json/{nominee_id}.json"
     if os.path.exists(output_file) and not force_parse:
-        with open(output_file, "r") as json_file:
+        with open(output_file, "r", encoding="utf-8") as json_file:
             result = json.load(json_file)
         return result
 
     # Read the HTML file
-    with open(input_file, "r") as f:
+    with open(input_file, "r", encoding="utf-8") as f:
         html_content = f.read()
 
     # Parse the HTML content
@@ -99,7 +99,7 @@ def parse_feedback(nominee_id, force_metadata=False, force_feedback=False, force
 
     # Write the extracted data to a JSON file
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, "w") as json_file:
+    with open(output_file, "w", encoding="utf-8") as json_file:
         json.dump(result, json_file, indent=4)
     print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")
 

@@ -18,7 +18,7 @@ def load_nominees(force_metadata=False):
 
     nominees_file = "data/nominees.json"
     if not force_metadata and os.path.exists(nominees_file):
-        with open(nominees_file, "r") as f:
+        with open(nominees_file, "r", encoding="utf-8") as f:
             NOMINEES_DATA = json.load(f)['objects']
             return NOMINEES_DATA
 
@@ -28,7 +28,7 @@ def load_nominees(force_metadata=False):
     nominees_data = response.json()
 
     os.makedirs(os.path.dirname(nominees_file), exist_ok=True)
-    with open(nominees_file, "w") as f:
+    with open(nominees_file, "w", encoding="utf-8") as f:
         json.dump(nominees_data, f, indent=4)
     print(f"Nominees data downloaded and saved to {nominees_file}")
     NOMINEES_DATA = nominees_data['objects']
@@ -40,7 +40,7 @@ def get_person_id_from_email(email, force_metadata=False):
     if not EMAILS_TO_PEOPLE_IDS:
         EMAILS_TO_PEOPLE_IDS = {}
         if not force_metadata and os.path.exists(emails_file):
-            with open(emails_file, "r") as f:
+            with open(emails_file, "r", encoding="utf-8") as f:
                 EMAILS_TO_PEOPLE_IDS = json.load(f)
     if email in EMAILS_TO_PEOPLE_IDS:
         return EMAILS_TO_PEOPLE_IDS[email]
@@ -53,7 +53,7 @@ def get_person_id_from_email(email, force_metadata=False):
     person_id = person_path.strip('/').split('/')[-1]
     EMAILS_TO_PEOPLE_IDS[email] = person_id
     os.makedirs(os.path.dirname(emails_file), exist_ok=True)
-    with open(emails_file, "w") as f:
+    with open(emails_file, "w", encoding="utf-8") as f:
         json.dump(EMAILS_TO_PEOPLE_IDS, f, indent=4)
     return person_id
 
@@ -61,7 +61,7 @@ def get_person_info_from_id(person_id, force_metadata=False):
     person_file = f"data/persons/{person_id}.json"
 
     if not force_metadata and os.path.exists(person_file):
-        with open(person_file, "r") as f:
+        with open(person_file, "r", encoding="utf-8") as f:
             return json.load(f)
 
     url = f'https://datatracker.ietf.org/api/v1/person/person/{person_id}/'
@@ -70,7 +70,7 @@ def get_person_info_from_id(person_id, force_metadata=False):
     person_data = response.json()
 
     os.makedirs(os.path.dirname(person_file), exist_ok=True)
-    with open(person_file, "w") as f:
+    with open(person_file, "w", encoding="utf-8") as f:
         json.dump(person_data, f, indent=4)
     print(f"Person data downloaded and saved to {person_file}")
 
@@ -82,7 +82,7 @@ def get_person_info_from_email(email, force_metadata=False):
 def get_nominee_info(nominee_id, force_metadata=False):
     nominee_file = f"data/nominees/{nominee_id}.json"
     if not force_metadata and os.path.exists(nominee_file):
-        with open(nominee_file, "r") as f:
+        with open(nominee_file, "r", encoding="utf-8") as f:
             return json.load(f)
 
     nominee = None
@@ -139,7 +139,7 @@ def get_nominee_info(nominee_id, force_metadata=False):
     nominee_info['positions'] = positions
 
     os.makedirs(os.path.dirname(nominee_file), exist_ok=True)
-    with open(nominee_file, "w") as f:
+    with open(nominee_file, "w", encoding="utf-8") as f:
         json.dump(nominee_info, f, indent=4)
     print(f"Nominee info downloaded and saved to {nominee_file}")
 
@@ -169,7 +169,7 @@ def get_nominee_positions(force_metadata=False):
 
     nominee_positions_file = "data/nominee_positions.json"
     if not force_metadata and os.path.exists(nominee_positions_file):
-        with open(nominee_positions_file, "r") as f:
+        with open(nominee_positions_file, "r", encoding="utf-8") as f:
             NOMINEE_POSITIONS_DATA = json.load(f)['objects']
             return NOMINEE_POSITIONS_DATA
 
@@ -179,7 +179,7 @@ def get_nominee_positions(force_metadata=False):
     nominee_positions_data = response.json()
 
     os.makedirs(os.path.dirname(nominee_positions_file), exist_ok=True)
-    with open(nominee_positions_file, "w") as f:
+    with open(nominee_positions_file, "w", encoding="utf-8") as f:
         json.dump(nominee_positions_data, f, indent=4)
     print(f"Nominee positions data downloaded and saved to {nominee_positions_file}")
     NOMINEE_POSITIONS_DATA = nominee_positions_data['objects']

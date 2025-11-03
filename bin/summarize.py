@@ -16,14 +16,14 @@ def save_gemini_settings(settings):
     global GEMINI_SETTINGS
     GEMINI_SETTINGS = settings
     os.makedirs(os.path.dirname(GEMINI_SETTINGS_FILE), exist_ok=True)
-    with open(GEMINI_SETTINGS_FILE, "w") as f:
+    with open(GEMINI_SETTINGS_FILE, "w", encoding="utf-8") as f:
         json.dump(GEMINI_SETTINGS, f, indent=4)
 
 def get_gemini_settings():
     global GEMINI_SETTINGS
     if not GEMINI_SETTINGS:
         if os.path.exists(GEMINI_SETTINGS_FILE):
-            with open(GEMINI_SETTINGS_FILE, "r") as f:
+            with open(GEMINI_SETTINGS_FILE, "r", encoding="utf-8") as f:
                 GEMINI_SETTINGS = json.load(f)
         else:
             save_gemini_settings({
@@ -110,7 +110,7 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
     summary_file = os.path.join(summary_dir, summary_filename)
 
     if os.path.exists(summary_file) and not redo_summaries:
-        with open(summary_file, "r") as f:
+        with open(summary_file, "r", encoding="utf-8") as f:
             summary = f.read()
     elif not feedback_text.strip():
         summary = "<p>No feedback for this position.</p>"
@@ -118,7 +118,7 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
         prompt = f"Summarize the following feedback for {nominee_name} for the {position} position. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML. Use <h3> for main sections and <h4> for subsections.:\n\n{feedback_text}"
         summary, success = get_ai_summary(prompt)
         if success:
-            with open(summary_file, "w") as f:
+            with open(summary_file, "w", encoding="utf-8") as f:
                 f.write(summary)
     return summary
 
@@ -158,7 +158,7 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
     summary_file = os.path.join(summary_dir, summary_filename)
 
     if os.path.exists(summary_file) and not redo_summaries:
-        with open(summary_file, "r") as f:
+        with open(summary_file, "r", encoding="utf-8") as f:
             summary = f.read()
     elif not all_feedback_text.strip():
         summary = "<p>No feedback for this position.</p>"
@@ -171,7 +171,7 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
         prompt += f" If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML. Use <h3> for main sections and <h4> for subsections.:\n\n{all_feedback_text}"
         summary, success = get_ai_summary(prompt, use_pro_model=True)
         if success:
-            with open(summary_file, "w") as f:
+            with open(summary_file, "w", encoding="utf-8") as f:
                 f.write(summary)
     return summary
 

@@ -171,7 +171,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         body += '</div>\n'
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, "w") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         f.write(wrap_in_html(f"Feedback Summary for {nominee_name}", body))
     print(f"Successfully summarized {input_file} for {position_short_name} and saved to {output_file}")
 
@@ -185,7 +185,7 @@ def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=Fal
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    with open(input_file, "r") as f:
+    with open(input_file, "r", encoding="utf-8") as f:
         feedback_dict = json.load(f)
 
     for position_short_name, state in feedback_dict["nominee_info"]["positions"].items():
@@ -237,7 +237,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
         body += f'</div>\n'
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, "w") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         f.write(wrap_in_html(f"Nominee Summary for {position_full_name}", body))
     print(f"Successfully created summary for position {position_full_name} and saved to {output_file}")
 
@@ -264,7 +264,7 @@ def create_index_page(force_metadata=False):
     body += "</ul>\n"
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, "w") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         f.write(wrap_in_html("", body))
     print(f"Successfully created overall summary and saved to {output_file}")
 

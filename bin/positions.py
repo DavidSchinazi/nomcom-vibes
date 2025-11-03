@@ -35,7 +35,7 @@ def get_positions(force_metadata=False):
 
     positions_file = "data/positions.json"
     if not force_metadata and os.path.exists(positions_file):
-        with open(positions_file, "r") as f:
+        with open(positions_file, "r", encoding="utf-8") as f:
             POSITIONS_DATA = json.load(f)['objects']
             return POSITIONS_DATA
 
@@ -45,7 +45,7 @@ def get_positions(force_metadata=False):
     positions_data = response.json()
 
     os.makedirs(os.path.dirname(positions_file), exist_ok=True)
-    with open(positions_file, "w") as f:
+    with open(positions_file, "w", encoding="utf-8") as f:
         json.dump(positions_data, f, indent=4)
     print(f"Positions data downloaded and saved to {positions_file}")
     POSITIONS_DATA = positions_data['objects']
