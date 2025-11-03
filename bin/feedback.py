@@ -83,10 +83,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
+    parser.add_argument("identifier", nargs="?", help="Optional: The nominee ID or position name to get feedback for.")
     parser.add_argument("-a", "--force-all", action="store_true", help="Get latest feedback and redo subsequent operations")
     args = parser.parse_args()
 
     if args.force_all:
         args.force_feedback = True
 
-    save_all_html_feedback(force_metadata=args.force_metadata, force_feedback=args.force_feedback)
+    if args.identifier:
+        try:
+            nominee_id = int(args.identifier)
+            save_html_feedback_for_nominee(nominee_id, force_feedback=args.force_feedback)
+        except ValueError:
+            position_name = args.identifier
+            save_html_feedback_for_position(position_name, force_feedback=args.force_feedback)
+    else:
+        save_all_html_feedback(force_metadata=args.force_metadata, force_feedback=args.force_feedback)
