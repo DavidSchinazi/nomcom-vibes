@@ -6,7 +6,7 @@ import re
 import os
 import sys
 from nominees import get_active_nominees, get_nominee_info
-from positions import get_position_short_name, get_topic_id_from_position_name
+from positions import get_position_short_name, get_positions, get_topic_id_from_position_name
 from feedback import save_html_feedback_for_nominee, save_html_feedback_for_position
 
 def parse_feedback_for_position(position_name, force_metadata=False, force_feedback=False, force_parse=False):
@@ -174,6 +174,8 @@ def parse_feedback_for_nominee(nominee_id, force_metadata=False, force_feedback=
 def parse_all_feedback(force_metadata=False, force_feedback=False, force_parse=False):
     for nominee in get_active_nominees(force_metadata=force_metadata):
         parse_feedback_for_nominee(nominee["id"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
+    for position in get_positions(force_metadata=force_metadata):
+        parse_feedback_for_position(position["name"], force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse feedback from HTML files.')
