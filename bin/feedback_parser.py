@@ -29,7 +29,7 @@ def parse_feedback_for_position(position_name, force_metadata=False, force_feedb
     # Find the active tab pane which contains the feedback comments
     comment_tab_pane = soup.find("div", {"id": "comment", "role": "tabpanel", "class": "tab-pane active"})
 
-    feedback_data = {}
+    feedback_data = []
 
     if comment_tab_pane:
         # Find all feedback entries within the comment tab pane
@@ -62,10 +62,7 @@ def parse_feedback_for_position(position_name, force_metadata=False, force_feedb
                         data["subject"] = dd_text
 
             if data:
-                nominee = data.pop("nominee", "No nominee specified")
-                if nominee not in feedback_data:
-                    feedback_data[nominee] = []
-                feedback_data[nominee].append(data)
+                feedback_data.append(data)
 
     result = {}
     result["feedback"] = feedback_data
@@ -180,7 +177,7 @@ def parse_all_feedback(force_metadata=False, force_feedback=False, force_parse=F
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse feedback from HTML files.')
-    parser.add_argument('nominee_id', nargs='?', help='Optional: The nominee ID to parse feedback for.')
+    parser.add_argument('identifier', nargs='?', help='Optional: The nominee ID or position name to parse feedback for.')
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("-f", "--force-feedback", action="store_true", help="Force download of feedback even if file exists")
     parser.add_argument("-p", "--force-parse", action="store_true", help="Force parsing even if JSON file exists")
@@ -191,7 +188,12 @@ if __name__ == "__main__":
         args.force_feedback = True
         args.force_parse = True
 
-    if args.nominee_id:
-        parse_feedback_for_nominee(args.nominee_id, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse)
+    if args.identifier:
+        try:
+            nominee_id = int(args.identifier)
+            parse_feedback_for_nominee(nominee_id, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse)
+        except ValueError:
+            position_name = args.identifier
+            parse_feedback_for_position(position_name, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse)
     else:
         parse_all_feedback(force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse)
