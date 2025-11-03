@@ -87,6 +87,11 @@ def get_topic_id_from_position_name(position_full_name, force_metadata=False):
     for topic in topics:
         if position_full_name in topic['subject']:
             return topic['id']
+    expanded_full_name = get_position_full_name(position_full_name)
+    if expanded_full_name:
+        for topic in topics:
+            if expanded_full_name in topic['subject']:
+                return topic['id']
     return None
 
 
