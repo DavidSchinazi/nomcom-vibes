@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 from nominees import get_active_nominees
+from positions import get_topic_id_from_position_name
 
 SESSION_ID = None
 
@@ -48,6 +49,28 @@ def save_html_feedback_for_nominee(nominee_id, force_feedback=False):
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(response.text)
     print(f"Saved HTML feedback for nominee {nominee_id} to {output_file}")
+
+
+def save_html_feedback_for_position(position_name, force_feedback=False):
+    """Downloads and saves the HTML feedback for a single position."""
+    session_id = get_session_id()
+    topic_id = get_topic_id_from_position_name(position_name)
+    if not topic_id:
+        print(f"Could not find topic ID for position {position_name}")
+        return
+    output_file = f"data/feedback_html/position_{topic_id}.html"
+    if not force_feedback and os.path.exists(output_file):
+        return
+
+    url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/topic/{topic_id}"
+    print(f"Downloading HTML feedback for position {position_name} from {url}")
+    response = requests.get(url, cookies={"sessionid": session_id})
+    response.raise_for_status()
+
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(response.text)
+    print(f"Saved HTML feedback for position {position_name} to {output_file}")
 
 
 def save_all_html_feedback(force_metadata=False, force_feedback=False):
