@@ -22,3 +22,9 @@ git clone https://github.com/DavidSchinazi/nomcom-vibes
 cd nomcom-vibes
 ./bin/run.py
 ```
+
+You can periodically pull the latest tool and feedback by running:
+
+```
+git pull ; ./bin/run.py -a
+```
