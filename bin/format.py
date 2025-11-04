@@ -5,10 +5,10 @@ import os
 import json
 import shutil
 from feedback import get_session_id
-from feedback_parser import parse_feedback_for_nominee
+from feedback_parser import parse_feedback_for_nominee, parse_feedback_for_position
 from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info, get_person_info_from_email
 from summarize import are_summaries_enabled, get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
-from positions import get_position_short_name, get_position_full_name, get_positions
+from positions import get_position_short_name, get_position_full_name, get_positions, get_topic_id_from_position_name
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -135,7 +135,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
             name = feedback["name"]
             email = feedback["email"]
             date = feedback["date"]
-            contents = feedback["feedback"]
+            contents = feedback["feedback"].replace("\n", "<br/>")
             person_info = get_person_info_from_email(email)
             photo = person_info.get("photo_thumb")
             if not photo:
@@ -178,6 +178,8 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
 def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     print(f"Creating summary for nominee {nominee_id}")
     output_dir = "output/data"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
 
     # Make sure the parsed JSON is there.
@@ -204,6 +206,13 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     output_dir = "output/data"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+    topic_id = get_topic_id_from_position_name(position_short_name, force_metadata=force_metadata)
+    input_file = os.path.join("data/feedback_json", f"topic_{topic_id}.json")
+
+    # Make sure the parsed JSON is there.
+    parse_feedback_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
+    with open(input_file, "r", encoding="utf-8") as f:
+        feedback_dict = json.load(f)
 
     nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
     nominee_ids = nominees_by_position.get(position_short_name)
@@ -235,6 +244,28 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
         body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-content-toggle" class="toggle-button">&#9660;</span>AI Summary</h1>\n'
         body += f'<div id="ai-summary-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">{summary}</div>\n'
         body += f'</div>\n'
+    feedback_list = feedback_dict["feedback"]
+    if feedback_list:
+        body += '<div style="background-color: #ddffdd;">\n'
+        body += f'<h1 onclick="toggleSection(\'community-feedback-content\')" style="cursor: pointer;"><span id="community-feedback-content-toggle" class="toggle-button">&#9660;</span>Community Feedback</h1>\n'
+        body += '<div id="community-feedback-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">\n'
+        for feedback in feedback_list:
+            name = feedback["name"]
+            email = feedback["email"]
+            date = feedback["date"]
+            contents = feedback["feedback"].replace("\n", "<br/>")
+            person_info = get_person_info_from_email(email)
+            photo = person_info.get("photo_thumb")
+            if not photo:
+                photo = person_info.get("photo")
+            if not photo:
+                photo = "https://www.ietf.org/media/images/ietf-logo.original.png"
+
+            body += f'<div class="feedback">\n'
+            body += f'<p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}">{name}</a>: {contents}</p>\n'
+            body += f'</div>\n'
+        body += '</div>\n'
+        body += '</div>\n'
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:

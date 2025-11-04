@@ -86,7 +86,7 @@ def get_person_info_from_email(email, force_metadata=False):
 def get_nominee_info(nominee_id, force_metadata=False):
     global NOMINEE_IDS_DOWNLOADED
     nominee_file = f"data/nominees/{nominee_id}.json"
-    if os.path.exists(nominee_file) and ((not force_metadata) or (person_id in NOMINEE_IDS_DOWNLOADED)):
+    if os.path.exists(nominee_file) and ((not force_metadata) or (nominee_id in NOMINEE_IDS_DOWNLOADED)):
         with open(nominee_file, "r", encoding="utf-8") as f:
             return json.load(f)
 
