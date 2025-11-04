@@ -11,6 +11,8 @@ from positions import get_position_full_name
 
 GEMINI_SETTINGS = None
 GEMINI_SETTINGS_FILE = "config/gemini_settings.json"
+NOMINEE_POSITIONS_SUMMARIZED = []
+POSITIONS_SUMMARIZED = []
 
 def save_gemini_settings(settings):
     global GEMINI_SETTINGS
@@ -82,6 +84,7 @@ def get_ai_summary(prompt, use_pro_model=False, summaries_forced=None):
 
 def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     """Gets the summary for a given nominee and position."""
+    global NOMINEE_POSITIONS_SUMMARIZED
     if not get_gemini_api_key(summaries_forced=summaries_forced):
         return None
     nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
@@ -103,27 +106,31 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
         contents = item["feedback"]
         feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
 
-    summary_filename = f"{nominee_id}_{position}.txt"
+    nominee_position = f"{nominee_id}_{position}"
+    summary_filename = f"{nominee_position}.txt"
     summary_dir = "data/ai_summaries"
     if not os.path.exists(summary_dir):
         os.makedirs(summary_dir)
     summary_file = os.path.join(summary_dir, summary_filename)
 
-    if os.path.exists(summary_file) and not redo_summaries:
+    if os.path.exists(summary_file) and ((not redo_summaries) or (nominee_position in NOMINEE_POSITIONS_SUMMARIZED)):
         with open(summary_file, "r", encoding="utf-8") as f:
             summary = f.read()
     elif not feedback_text.strip():
         summary = "<p>No feedback for this position.</p>"
     else:
         prompt = f"Summarize the following feedback for {nominee_name} for the {position} position. If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML. Use <h3> for main sections and <h4> for subsections.:\n\n{feedback_text}"
+        print(f"Generating AI summary for {nominee_name} ({nominee_id}) for {position}...")
         summary, success = get_ai_summary(prompt)
         if success:
             with open(summary_file, "w", encoding="utf-8") as f:
                 f.write(summary)
+            NOMINEE_POSITIONS_SUMMARIZED.append(nominee_position)
     return summary
 
 def get_ai_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     """Gets the summary for a given position."""
+    global POSITIONS_SUMMARIZED
     if not get_gemini_api_key(summaries_forced=summaries_forced):
         return None
     nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
@@ -157,7 +164,7 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
         os.makedirs(summary_dir)
     summary_file = os.path.join(summary_dir, summary_filename)
 
-    if os.path.exists(summary_file) and not redo_summaries:
+    if os.path.exists(summary_file) and ((not redo_summaries) or (position in POSITIONS_SUMMARIZED)):
         with open(summary_file, "r", encoding="utf-8") as f:
             summary = f.read()
     elif not all_feedback_text.strip():
@@ -169,10 +176,12 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
             position_full = get_position_full_name(position)
             prompt = f"We need to pick one person for the role of {position_full}. Based on the following feedback for these nominees, who does the community think is the best choice?"
         prompt += f" If there are differing opinions, try to attribute comments to the name of the person who made them. Provide the summary as an HTML snippet suitable for embedding directly into a <body> tag, without any surrounding <html>, <head>, or <body> tags, and without any markdown formatting or extra text outside the HTML. Use <h3> for main sections and <h4> for subsections.:\n\n{all_feedback_text}"
+        print(f"Generating AI summary for {position}...")
         summary, success = get_ai_summary(prompt, use_pro_model=True)
         if success:
             with open(summary_file, "w", encoding="utf-8") as f:
                 f.write(summary)
+            POSITIONS_SUMMARIZED.append(position)
     return summary
 
 def run_summarize(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
