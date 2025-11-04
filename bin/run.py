@@ -2,7 +2,13 @@
 
 import argparse
 import os
+from feedback import save_all_html_feedback
+from feedback_parser import parse_all_feedback
 from format import run_formatting
+from nominees import get_active_nominees, get_nominee_info, get_nominee_positions
+from positions import get_positions, get_topics
+from summarize import are_summaries_enabled, run_summarize
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Format feedback summaries.')
@@ -28,6 +34,23 @@ if __name__ == "__main__":
             nominee_id = int(args.identifier)
         except ValueError:
             position_short_name = args.identifier
+
+    if not nominee_id and not position_short_name:
+        print("Getting positions and topics...")
+        get_positions(force_metadata=args.force_metadata)
+        get_topics(force_metadata=args.force_metadata)
+        get_nominee_positions(force_metadata=args.force_metadata)
+        print("Getting nominees...")
+        for nominee in get_active_nominees(force_metadata=args.force_metadata):
+            nominee_info = get_nominee_info(nominee['id'], force_metadata=args.force_metadata)
+        print("Saving feedback...")
+        save_all_html_feedback(force_metadata=args.force_metadata, force_feedback=args.force_feedback)
+        print("Parsing feedback...")
+        parse_all_feedback(force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse)
+        if are_summaries_enabled(summaries_forced=args.summaries_forced):
+            print("Summarizing feedback...")
+            run_summarize(nominee_id=None, position=None, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, redo_summaries=args.redo_summaries, summaries_forced=args.summaries_forced)
+        print("Formatting feedback...")
 
     run_formatting(nominee_id=nominee_id, position_short_name=position_short_name, force_metadata=args.force_metadata, force_feedback=args.force_feedback, force_parse=args.force_parse, redo_summaries=args.redo_summaries, summaries_forced=args.summaries_forced)
 

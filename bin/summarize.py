@@ -192,12 +192,8 @@ def run_summarize(nominee_id=None, position=None, force_metadata=False, force_fe
              for position, state in nominee_info["positions"].items():
                  if state == 'accepted':
                     summary = get_ai_summary_for_nominee_and_position(nominee['id'], position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
-                    print(f"--- Summary for {nominee_info['name']} for {position} ---")
-                    print(summary)
         for position in get_nominees_by_position(force_metadata=force_metadata):
             summary = get_ai_summary_for_position(position, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
-            print(f"--- Summary for position {position} ---")
-            print(summary)
 
 if __name__ == "__main__":
     import argparse

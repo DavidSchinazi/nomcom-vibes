@@ -246,3 +246,4 @@ if __name__ == "__main__":
     else:
         for nominee in load_nominees(force_metadata=args.force_metadata):
             get_nominee_info(nominee['id'], force_metadata=args.force_metadata)
+        get_nominee_positions(force_metadata=args.force_metadata)

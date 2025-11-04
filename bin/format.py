@@ -7,7 +7,7 @@ import shutil
 from feedback import get_session_id
 from feedback_parser import parse_feedback_for_nominee, parse_feedback_for_position
 from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info, get_person_info_from_email
-from summarize import are_summaries_enabled, get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
+from summarize import get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
 from positions import get_position_short_name, get_position_full_name, get_positions, get_topic_id_from_position_name
 
 HTML_TEMPLATE = """<!DOCTYPE html>
@@ -176,7 +176,6 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     print(f"Successfully summarized {input_file} for {position_short_name} and saved to {output_file}")
 
 def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
-    print(f"Creating summary for nominee {nominee_id}")
     output_dir = "output/data"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -202,7 +201,6 @@ def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=Fal
 
 def create_page_for_position(position_short_name, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     position_full_name = get_position_full_name(position_short_name)
-    print(f"Creating summary for position {position_full_name}")
     output_dir = "output/data"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
