@@ -8,6 +8,8 @@ from nominees import get_active_nominees
 from positions import get_topic_id_from_position_name, get_positions
 
 SESSION_ID = None
+FEEDBACK_NOMINEE_ID_DOWNLOADED = []
+FEEDBACK_TOPIC_DOWNLOADED = []
 
 def get_session_id():
     global SESSION_ID
@@ -35,9 +37,10 @@ def get_session_id():
 
 def save_html_feedback_for_nominee(nominee_id, force_feedback=False):
     """Downloads and saves the HTML feedback for a single nominee."""
+    global FEEDBACK_NOMINEE_ID_DOWNLOADED
     session_id = get_session_id()
     output_file = f"data/feedback_html/{nominee_id}.html"
-    if not force_feedback and os.path.exists(output_file):
+    if os.path.exists(output_file) and ((not force_feedback) or (nominee_id in FEEDBACK_NOMINEE_ID_DOWNLOADED)):
         return
 
     url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/nominee/{nominee_id}"
@@ -49,17 +52,19 @@ def save_html_feedback_for_nominee(nominee_id, force_feedback=False):
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(response.text)
     print(f"Saved HTML feedback for nominee {nominee_id} to {output_file}")
+    FEEDBACK_NOMINEE_ID_DOWNLOADED.append(nominee_id)
 
 
 def save_html_feedback_for_position(position_name, force_feedback=False):
     """Downloads and saves the HTML feedback for a single position."""
+    global FEEDBACK_TOPIC_DOWNLOADED
     session_id = get_session_id()
     topic_id = get_topic_id_from_position_name(position_name)
     if not topic_id:
         print(f"Could not find topic ID for position {position_name}")
         return
-    output_file = f"data/feedback_html/position_{topic_id}.html"
-    if not force_feedback and os.path.exists(output_file):
+    output_file = f"data/feedback_html/topic_{topic_id}.html"
+    if os.path.exists(output_file) and ((not force_feedback) or (topic_id in FEEDBACK_TOPIC_DOWNLOADED)):
         return
 
     url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/topic/{topic_id}"
@@ -71,6 +76,7 @@ def save_html_feedback_for_position(position_name, force_feedback=False):
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(response.text)
     print(f"Saved HTML feedback for position {position_name} to {output_file}")
+    FEEDBACK_TOPIC_DOWNLOADED.append(topic_id)
 
 
 def save_all_html_feedback(force_metadata=False, force_feedback=False):

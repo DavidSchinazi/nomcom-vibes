@@ -12,8 +12,8 @@ from feedback import save_html_feedback_for_nominee, save_html_feedback_for_posi
 def parse_feedback_for_position(position_name, force_metadata=False, force_feedback=False, force_parse=False):
     save_html_feedback_for_position(position_name, force_feedback=force_feedback)
     topic_id = get_topic_id_from_position_name(position_name, force_metadata=force_metadata)
-    input_file = f"data/feedback_html/position_{topic_id}.html"
-    output_file = f"data/feedback_json/position_{topic_id}.json"
+    input_file = f"data/feedback_html/topic_{topic_id}.html"
+    output_file = f"data/feedback_json/topic_{topic_id}.json"
     if os.path.exists(output_file) and not force_parse:
         with open(output_file, "r", encoding="utf-8") as json_file:
             result = json.load(json_file)

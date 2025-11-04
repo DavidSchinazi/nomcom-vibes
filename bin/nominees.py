@@ -10,6 +10,8 @@ NOMINEE_POSITIONS_DATA = None
 ACTIVE_NOMINEES_DATA = None
 NOMINEES_BY_POSITION_DATA = None
 EMAILS_TO_PEOPLE_IDS = None
+PERSON_IDS_DOWNLOADED = []
+NOMINEE_IDS_DOWNLOADED = []
 
 def load_nominees(force_metadata=False):
     global NOMINEES_DATA
@@ -58,9 +60,10 @@ def get_person_id_from_email(email, force_metadata=False):
     return person_id
 
 def get_person_info_from_id(person_id, force_metadata=False):
+    global PERSON_IDS_LOADED
     person_file = f"data/persons/{person_id}.json"
 
-    if not force_metadata and os.path.exists(person_file):
+    if os.path.exists(person_file) and ((not force_metadata) or (person_id in PERSON_IDS_DOWNLOADED)):
         with open(person_file, "r", encoding="utf-8") as f:
             return json.load(f)
 
@@ -73,6 +76,7 @@ def get_person_info_from_id(person_id, force_metadata=False):
     with open(person_file, "w", encoding="utf-8") as f:
         json.dump(person_data, f, indent=4)
     print(f"Person data downloaded and saved to {person_file}")
+    PERSON_IDS_DOWNLOADED.append(person_id)
 
     return person_data
 
@@ -80,8 +84,9 @@ def get_person_info_from_email(email, force_metadata=False):
     return get_person_info_from_id(get_person_id_from_email(email, force_metadata=force_metadata), force_metadata=force_metadata)
 
 def get_nominee_info(nominee_id, force_metadata=False):
+    global NOMINEE_IDS_DOWNLOADED
     nominee_file = f"data/nominees/{nominee_id}.json"
-    if not force_metadata and os.path.exists(nominee_file):
+    if os.path.exists(nominee_file) and ((not force_metadata) or (person_id in NOMINEE_IDS_DOWNLOADED)):
         with open(nominee_file, "r", encoding="utf-8") as f:
             return json.load(f)
 
@@ -142,6 +147,7 @@ def get_nominee_info(nominee_id, force_metadata=False):
     with open(nominee_file, "w", encoding="utf-8") as f:
         json.dump(nominee_info, f, indent=4)
     print(f"Nominee info downloaded and saved to {nominee_file}")
+    NOMINEE_IDS_DOWNLOADED.append(nominee_id)
 
     return nominee_info
 
