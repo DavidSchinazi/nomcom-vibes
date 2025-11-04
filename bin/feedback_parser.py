@@ -9,12 +9,16 @@ from nominees import get_active_nominees, get_nominee_info
 from positions import get_position_short_name, get_positions, get_topic_id_from_position_name
 from feedback import save_html_feedback_for_nominee, save_html_feedback_for_position
 
+PARSED_TOPIC_IDS = []
+PARSED_NOMINEE_IDS = []
+
 def parse_feedback_for_position(position_name, force_metadata=False, force_feedback=False, force_parse=False):
+    global PARSED_TOPIC_IDS
     save_html_feedback_for_position(position_name, force_feedback=force_feedback)
     topic_id = get_topic_id_from_position_name(position_name, force_metadata=force_metadata)
     input_file = f"data/feedback_html/topic_{topic_id}.html"
     output_file = f"data/feedback_json/topic_{topic_id}.json"
-    if os.path.exists(output_file) and not force_parse:
+    if os.path.exists(output_file) and ((not force_parse) or (topic_id in PARSED_TOPIC_IDS)):
         with open(output_file, "r", encoding="utf-8") as json_file:
             result = json.load(json_file)
         return result
@@ -72,14 +76,16 @@ def parse_feedback_for_position(position_name, force_metadata=False, force_feedb
     with open(output_file, "w", encoding="utf-8") as json_file:
         json.dump(result, json_file, indent=4)
     print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")
+    PARSED_TOPIC_IDS.append(topic_id)
 
     return result
 
 def parse_feedback_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False):
+    global PARSED_NOMINEE_IDS
     save_html_feedback_for_nominee(nominee_id, force_feedback=force_feedback)
     input_file = f"data/feedback_html/{nominee_id}.html"
     output_file = f"data/feedback_json/{nominee_id}.json"
-    if os.path.exists(output_file) and not force_parse:
+    if os.path.exists(output_file) and ((not force_parse) or (nominee_id in PARSED_NOMINEE_IDS)):
         with open(output_file, "r", encoding="utf-8") as json_file:
             result = json.load(json_file)
         return result
@@ -168,6 +174,7 @@ def parse_feedback_for_nominee(nominee_id, force_metadata=False, force_feedback=
     with open(output_file, "w", encoding="utf-8") as json_file:
         json.dump(result, json_file, indent=4)
     print(f"Successfully extracted feedback from {input_file} and saved to {output_file}")
+    PARSED_NOMINEE_IDS.append(nominee_id)
 
     return result
 
