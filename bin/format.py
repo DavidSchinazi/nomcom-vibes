@@ -128,10 +128,41 @@ def _create_community_feedback_section(feedback_list):
 </div>
 '''
 
+def _create_interview_section(feedback_list):
+    """Creates the HTML section for interview feedback."""
+    if not feedback_list:
+        return ""
+
+    feedback_html = ""
+    for feedback in feedback_list:
+        name = feedback["name"]
+        email = feedback["email"]
+        date = feedback["date"]
+        contents = feedback["feedback"].replace("\n", "<br/>")
+        photo = _get_photo_for_email(email)
+        color = "black"
+
+        feedback_html += f'''<div class="feedback">
+<p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}" style="color: {color};">{name}</a>: {contents}</p>
+</div>
+'''
+
+    return f'''<div style="background-color: #ddddff;">
+<h1 onclick="toggleSection('interview-feedback-content')" style="cursor: pointer;"><span id="interview-feedback-content-toggle" class="toggle-button">&#9660;</span>Interview</h1>
+<div id="interview-feedback-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">
+{feedback_html}
+</div>
+</div>
+'''
+
+
 def create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position_short_name):
     """Creates an HTML file with the summary and feedback."""
     feedback_with_subject = [item for item in feedback_list if "subject" in item]
     feedback_without_subject = [item for item in feedback_list if "subject" not in item]
+
+    interview_feedback = [item for item in feedback_without_subject if ("interview" in item["feedback"].lower() or "transcript" in item["feedback"].lower()) and is_email_in_nomcom(item["email"], force_metadata=True)]
+    community_feedback = [item for item in feedback_without_subject if item not in interview_feedback]
 
     nominee_info = feedback_dict["nominee_info"]
     nominee_name = nominee_info["name"]
@@ -170,7 +201,8 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     body += '</div>\n'
     body += '</div>\n'
     body += _create_ai_summary_section(summary)
-    body += _create_community_feedback_section(feedback_without_subject)
+    body += _create_community_feedback_section(community_feedback)
+    body += _create_interview_section(interview_feedback)
     questionnaire = feedback_dict["questionnaires"].get(position_short_name)
     if questionnaire:
         body += '<div style="background-color: #eeeeee;">\n'
