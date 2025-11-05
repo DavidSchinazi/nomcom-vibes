@@ -199,7 +199,7 @@ def get_nomcom_group_id(force_metadata=False):
         return NOMCOM_GROUP_ID
 
     nomcom_id = get_nomcom_id()
-    nomcom_group_file = f"data/nomcom/{nomcom_id}.json"
+    nomcom_group_file = f"data/nomcom_id.json"
     if not force_metadata and os.path.exists(nomcom_group_file):
         with open(nomcom_group_file, "r", encoding="utf-8") as f:
             NOMCOM_GROUP_ID = json.load(f)['group']
