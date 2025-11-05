@@ -20,6 +20,9 @@ POSITION_SHORT_NAMES = {
     "Web and Internet Transport (WIT) AD": "WIT"
 }
 
+def get_nomcom_id():
+    return 16
+
 def get_position_short_name(name):
     return POSITION_SHORT_NAMES[name]
 
@@ -40,7 +43,8 @@ def get_positions(force_metadata=False):
             POSITIONS_DATA = json.load(f)['objects']
             return POSITIONS_DATA
 
-    url = "https://datatracker.ietf.org/api/v1/nomcom/position/?nomcom=16&limit=1000"
+    nomcom_id = get_nomcom_id()
+    url = f"https://datatracker.ietf.org/api/v1/nomcom/position/?nomcom={nomcom_id}&limit=1000"
     response = requests.get(url)
     response.raise_for_status()  # Raise an exception for HTTP errors
     positions_data = response.json()
@@ -63,7 +67,8 @@ def get_topics(force_metadata=False):
             TOPICS_DATA = json.load(f)['objects']
             return TOPICS_DATA
 
-    url = "https://datatracker.ietf.org/api/v1/nomcom/topic/?nomcom=16&limit=1000"
+    nomcom_id = get_nomcom_id()
+    url = f"https://datatracker.ietf.org/api/v1/nomcom/topic/?nomcom={nomcom_id}&limit=1000"
     response = requests.get(url)
     response.raise_for_status()  # Raise an exception for HTTP errors
     topics_data = response.json()

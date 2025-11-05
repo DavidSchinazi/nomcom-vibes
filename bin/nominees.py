@@ -3,7 +3,7 @@ import argparse
 import requests
 import json
 import os
-from positions import get_position_name, get_position_short_name
+from positions import get_nomcom_id, get_position_name, get_position_short_name
 
 NOMINEES_DATA = None
 NOMINEE_POSITIONS_DATA = None
@@ -24,7 +24,8 @@ def load_nominees(force_metadata=False):
             NOMINEES_DATA = json.load(f)['objects']
             return NOMINEES_DATA
 
-    url = "https://datatracker.ietf.org/api/v1/nomcom/nominee/?nomcom=16&limit=1000"
+    nomcom_id = get_nomcom_id()
+    url = f"https://datatracker.ietf.org/api/v1/nomcom/nominee/?nomcom={nomcom_id}&limit=1000"
     response = requests.get(url)
     response.raise_for_status()  # Raise an exception for HTTP errors
     nominees_data = response.json()
