@@ -161,7 +161,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     feedback_with_subject = [item for item in feedback_list if "subject" in item]
     feedback_without_subject = [item for item in feedback_list if "subject" not in item]
 
-    interview_feedback = [item for item in feedback_without_subject if ("interview" in item["feedback"].lower() or "transcript" in item["feedback"].lower()) and is_email_in_nomcom(item["email"], force_metadata=True)]
+    interview_feedback = [item for item in feedback_without_subject if ("interview" in item["feedback"].lower() or "transcript" in item["feedback"].lower() or "nomcomietf@gmail.com" in item["feedback"].lower() or "nomcomietf2@gmail.com" in item["feedback"].lower()) and is_email_in_nomcom(item["email"], force_metadata=True)]
     community_feedback = [item for item in feedback_without_subject if item not in interview_feedback]
 
     nominee_info = feedback_dict["nominee_info"]
