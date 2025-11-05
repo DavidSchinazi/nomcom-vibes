@@ -245,6 +245,14 @@ def get_nomcom_group_info(force_metadata=False):
     return NOMCOM_GROUP_INFO_DATA
 
 
+def is_email_in_nomcom(email, force_metadata=False):
+    nomcom_group_info = get_nomcom_group_info(force_metadata=force_metadata)
+    for role in nomcom_group_info:
+        if 'person' in role and 'email' in role['person'] and role['person']['email'] == email:
+            return True
+    return False
+
+
 def get_active_nominees(force_metadata=False):
     global ACTIVE_NOMINEES_DATA
     if ACTIVE_NOMINEES_DATA:
