@@ -81,6 +81,53 @@ def wrap_in_html(title, body):
     """Wraps the given body in a basic HTML structure."""
     return HTML_TEMPLATE.format(title=title, body=body)
 
+def _get_photo_for_email(email):
+    """Gets the photo for a given email."""
+    person_info = get_person_info_from_email(email)
+    photo = person_info.get("photo_thumb")
+    if not photo:
+        photo = person_info.get("photo")
+    if not photo:
+        photo = "https://www.ietf.org/media/images/ietf-logo.original.png"
+    return photo
+
+def _create_ai_summary_section(summary):
+    """Creates the HTML section for the AI summary."""
+    if not summary:
+        return ""
+    return f'''<div style="background-color: #ffdddd;">
+<h1 onclick="toggleSection('ai-summary-content')" style="cursor: pointer;"><span id="ai-summary-content-toggle" class="toggle-button">&#9660;</span>AI Summary</h1>
+<div id="ai-summary-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">{summary}</div>
+</div>
+'''
+
+def _create_community_feedback_section(feedback_list):
+    """Creates the HTML section for community feedback."""
+    if not feedback_list:
+        return ""
+
+    feedback_html = ""
+    for feedback in feedback_list:
+        name = feedback["name"]
+        email = feedback["email"]
+        date = feedback["date"]
+        contents = feedback["feedback"].replace("\n", "<br/>")
+        photo = _get_photo_for_email(email)
+        color = "red" if is_email_in_nomcom(email, force_metadata=True) else "black"
+
+        feedback_html += f'''<div class="feedback">
+<p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}" style="color: {color};">{name}</a>: {contents}</p>
+</div>
+'''
+
+    return f'''<div style="background-color: #ddffdd;">
+<h1 onclick="toggleSection('community-feedback-content')" style="cursor: pointer;"><span id="community-feedback-content-toggle" class="toggle-button">&#9660;</span>Community Feedback</h1>
+<div id="community-feedback-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">
+{feedback_html}
+</div>
+</div>
+'''
+
 def create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position_short_name):
     """Creates an HTML file with the summary and feedback."""
     feedback_with_subject = [item for item in feedback_list if "subject" in item]
@@ -122,33 +169,8 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
         body += f'<b>Also Accepted Nominations For</b>: {", ".join(other_positions)}<br/>\n'
     body += '</div>\n'
     body += '</div>\n'
-    if summary:
-        body += f'<div style="background-color: #ffdddd;">\n'
-        body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-content-toggle" class="toggle-button">&#9660;</span>AI Summary</h1>\n'
-        body += f'<div id="ai-summary-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">{summary}</div>\n'
-        body += f'</div>\n'
-    if feedback_without_subject:
-        body += '<div style="background-color: #ddffdd;">\n'
-        body += f'<h1 onclick="toggleSection(\'community-feedback-content\')" style="cursor: pointer;"><span id="community-feedback-content-toggle" class="toggle-button">&#9660;</span>Community Feedback</h1>\n'
-        body += '<div id="community-feedback-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">\n'
-        for feedback in feedback_without_subject:
-            name = feedback["name"]
-            email = feedback["email"]
-            date = feedback["date"]
-            contents = feedback["feedback"].replace("\n", "<br/>")
-            person_info = get_person_info_from_email(email)
-            photo = person_info.get("photo_thumb")
-            if not photo:
-                photo = person_info.get("photo")
-            if not photo:
-                photo = "https://www.ietf.org/media/images/ietf-logo.original.png"
-            color = "red" if is_email_in_nomcom(email, force_metadata=True) else "black"
-
-            body += f'<div class="feedback">\n'
-            body += f'<p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}" style="color: {color};">{name}</a>: {contents}</p>\n'
-            body += f'</div>\n'
-        body += '</div>\n'
-        body += '</div>\n'
+    body += _create_ai_summary_section(summary)
+    body += _create_community_feedback_section(feedback_without_subject)
     questionnaire = feedback_dict["questionnaires"].get(position_short_name)
     if questionnaire:
         body += '<div style="background-color: #eeeeee;">\n'
@@ -234,38 +256,13 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
         if nominee_photo:
             body += f'<li style="display: flex; align-items: center; margin: 0; padding: 0.2rem 0;"><a href="{summary_file}"><img src="{nominee_photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/></a><a href="{summary_file}">{nominee_name}</a></li>\n'
         else:
-            body += f'<li style="display: flex; align-items: center; margin: 0; padding: 0.2rem 0;"><a href="{summary_file}"><img src="https://www.ietf.org/media/images/ietf-logo.original.png" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/></a><a href="{summary_file}">{nominee_name}</a></li>\n'
+            body += f'<li style="display: flex; align-items: center; margin: 0; padding: 0.2rem 0;"><a href="{summary_file}"><img src="{_get_photo_for_email(nominee_info["email"])}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/></a><a href="{summary_file}">{nominee_name}</a></li>\n'
     body += "</ul>\n"
     body += '</div>\n'
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
-    if summary:
-        body += f'<div style="background-color: #ffdddd;">\n'
-        body += f'<h1 onclick="toggleSection(\'ai-summary-content\')" style="cursor: pointer;"><span id="ai-summary-content-toggle" class="toggle-button">&#9660;</span>AI Summary</h1>\n'
-        body += f'<div id="ai-summary-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">{summary}</div>\n'
-        body += f'</div>\n'
+    body += _create_ai_summary_section(summary)
     feedback_list = feedback_dict["feedback"]
-    if feedback_list:
-        body += '<div style="background-color: #ddffdd;">\n'
-        body += f'<h1 onclick="toggleSection(\'community-feedback-content\')" style="cursor: pointer;"><span id="community-feedback-content-toggle" class="toggle-button">&#9660;</span>Community Feedback</h1>\n'
-        body += '<div id="community-feedback-content" class="collapsible-content active" style="padding-left: 1.5rem; max-height: 1000px;">\n'
-        for feedback in feedback_list:
-            name = feedback["name"]
-            email = feedback["email"]
-            date = feedback["date"]
-            contents = feedback["feedback"].replace("\n", "<br/>")
-            person_info = get_person_info_from_email(email)
-            photo = person_info.get("photo_thumb")
-            if not photo:
-                photo = person_info.get("photo")
-            if not photo:
-                photo = "https://www.ietf.org/media/images/ietf-logo.original.png"
-            color = "red" if is_email_in_nomcom(email, force_metadata=True) else "black"
-
-            body += f'<div class="feedback">\n'
-            body += f'<p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}" style="color: {color};">{name}</a>: {contents}</p>\n'
-            body += f'</div>\n'
-        body += '</div>\n'
-        body += '</div>\n'
+    body += _create_community_feedback_section(feedback_list)
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:
