@@ -6,7 +6,7 @@ import json
 import shutil
 from feedback import get_session_id
 from feedback_parser import parse_feedback_for_nominee, parse_feedback_for_position
-from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info, get_person_info_from_email
+from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info, get_person_info_from_email, is_email_in_nomcom
 from summarize import get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
 from positions import get_position_short_name, get_position_full_name, get_positions, get_topic_id_from_position_name
 
@@ -142,9 +142,10 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
                 photo = person_info.get("photo")
             if not photo:
                 photo = "https://www.ietf.org/media/images/ietf-logo.original.png"
+            color = "red" if is_email_in_nomcom(email, force_metadata=True) else "black"
 
             body += f'<div class="feedback">\n'
-            body += f'<p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}">{name}</a>: {contents}</p>\n'
+            body += f'<p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}" style="color: {color};">{name}</a>: {contents}</p>\n'
             body += f'</div>\n'
         body += '</div>\n'
         body += '</div>\n'
@@ -258,9 +259,10 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
                 photo = person_info.get("photo")
             if not photo:
                 photo = "https://www.ietf.org/media/images/ietf-logo.original.png"
+            color = "red" if is_email_in_nomcom(email, force_metadata=True) else "black"
 
             body += f'<div class="feedback">\n'
-            body += f'<p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}">{name}</a>: {contents}</p>\n'
+            body += f'<p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}" style="color: {color};">{name}</a>: {contents}</p>\n'
             body += f'</div>\n'
         body += '</div>\n'
         body += '</div>\n'

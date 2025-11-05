@@ -204,7 +204,7 @@ def get_nomcom_group_id(force_metadata=False):
     nomcom_group_file = f"data/nomcom_id.json"
     if not force_metadata and os.path.exists(nomcom_group_file):
         with open(nomcom_group_file, "r", encoding="utf-8") as f:
-            NOMCOM_GROUP_ID = json.load(f)['group']
+            NOMCOM_GROUP_ID = json.load(f)['group'].strip('/').split('/')[-1]
             return NOMCOM_GROUP_ID
 
     url = f"https://datatracker.ietf.org/api/v1/nomcom/nomcom/{nomcom_id}/"
@@ -216,7 +216,7 @@ def get_nomcom_group_id(force_metadata=False):
     with open(nomcom_group_file, "w", encoding="utf-8") as f:
         json.dump(nomcom_data, f, indent=4)
     print(f"Nomcom group data downloaded and saved to {nomcom_group_file}")
-    NOMCOM_GROUP_ID = nomcom_data['group']
+    NOMCOM_GROUP_ID = nomcom_data['group'].strip('/').split('/')[-1]
     return NOMCOM_GROUP_ID
 
 
@@ -247,8 +247,9 @@ def get_nomcom_group_info(force_metadata=False):
 
 def is_email_in_nomcom(email, force_metadata=False):
     nomcom_group_info = get_nomcom_group_info(force_metadata=force_metadata)
-    for role in nomcom_group_info:
-        if 'person' in role and 'email' in role['person'] and role['person']['email'] == email:
+    email_path = f"/api/v1/person/email/{email}/"
+    for nomcom_member in nomcom_group_info:
+        if nomcom_member['email'] == email_path:
             return True
     return False
 
