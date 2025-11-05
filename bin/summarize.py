@@ -82,15 +82,9 @@ def get_ai_summary(prompt, use_pro_model=False, summaries_forced=None):
     except Exception as e:
         return f"<h1>Error summarizing feedback</h1><p>{e}</p>", False
 
-def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
-    """Gets the summary for a given nominee and position."""
-    global NOMINEE_POSITIONS_SUMMARIZED
-    if not get_gemini_api_key(summaries_forced=summaries_forced):
-        return None
-    nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
-    nominee_name = nominee_info['name']
+def _get_feedback_text_for_nominee_and_position(nominee_id, position, force_metadata, force_feedback, force_parse):
+    """Gets the feedback text for a given nominee and position."""
     feedback_dict = parse_feedback_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
-
     feedback_by_position = feedback_dict.get("feedback", {})
     feedback_list = feedback_by_position.get(position, [])
 
@@ -105,6 +99,16 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
         author = item["name"]
         contents = item["feedback"]
         feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
+    return feedback_text
+
+def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
+    """Gets the summary for a given nominee and position."""
+    global NOMINEE_POSITIONS_SUMMARIZED
+    if not get_gemini_api_key(summaries_forced=summaries_forced):
+        return None
+    nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
+    nominee_name = nominee_info['name']
+    feedback_text = _get_feedback_text_for_nominee_and_position(nominee_id, position, force_metadata, force_feedback, force_parse)
 
     nominee_position = f"{nominee_id}_{position}"
     summary_filename = f"{nominee_position}.txt"
@@ -143,20 +147,7 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
     for nominee_id in nominee_ids:
         nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
         all_feedback_text += f"\n\n--- Feedback for {nominee_info['name']} ---\n\n"
-        feedback_dict = parse_feedback_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
-        feedback_by_position = feedback_dict.get("feedback", {})
-        feedback_list = feedback_by_position.get(position, [])
-
-        for item in feedback_list:
-            if "subject" in item:
-                # Skip self feedback.
-                continue
-            if "feedback" not in item or "name" not in item:
-                print(f"Missing information when parsing feedback for nominee {nominee_id} for position '{position}': {item}")
-                continue
-            author = item["name"]
-            contents = item["feedback"]
-            all_feedback_text += f"\n\nFeedback from {author}:\n\n{contents}"
+        all_feedback_text += _get_feedback_text_for_nominee_and_position(nominee_id, position, force_metadata, force_feedback, force_parse)
 
     summary_filename = f"{position}.txt"
     summary_dir = "data/ai_summaries"
