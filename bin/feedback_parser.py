@@ -12,6 +12,36 @@ from feedback import save_html_feedback_for_nominee, save_html_feedback_for_posi
 PARSED_TOPIC_IDS = []
 PARSED_NOMINEE_IDS = []
 
+def _parse_feedback_entry(entry):
+    """Parses a single feedback entry and returns a dictionary."""
+    data = {}
+    dts = entry.find_all("dt")
+    for dt in dts:
+        dt_text = dt.text.strip()
+        dd = dt.find_next_sibling("dd")
+        if dd:
+            dd_text = dd.text.strip()
+            if "From" in dt_text:
+                if len(dd.contents) > 0:
+                    name = dd.contents[0].strip().replace('<', '').strip()
+                    data['name'] = name
+                email_tag = dd.find("a")
+                if email_tag and "mailto:" in email_tag.get("href", ""):
+                    data["email"] = email_tag.text.strip()
+            elif "Date" in dt_text:
+                data["date"] = dd_text
+            elif "Nominees" in dt_text:
+                data["nominee"] = dd_text
+            elif "Positions" in dt_text:
+                data["position"] = get_position_short_name(dd_text)
+            elif "Feedback" in dt_text:
+                pre_tag = dd.find("pre")
+                if pre_tag:
+                    data["feedback"] = pre_tag.text.strip()
+            elif "Subject" in dt_text:
+                data["subject"] = dd_text
+    return data
+
 def parse_feedback_for_position(position_name, force_metadata=False, force_feedback=False, force_parse=False):
     global PARSED_TOPIC_IDS
     save_html_feedback_for_position(position_name, force_feedback=force_feedback)
@@ -40,31 +70,7 @@ def parse_feedback_for_position(position_name, force_metadata=False, force_feedb
         feedback_entries = comment_tab_pane.find_all("dl", class_="row")
 
         for entry in feedback_entries:
-            data = {}
-            dts = entry.find_all("dt")
-            for dt in dts:
-                dt_text = dt.text.strip()
-                dd = dt.find_next_sibling("dd")
-                if dd:
-                    dd_text = dd.text.strip()
-                    if "From" in dt_text:
-                        if len(dd.contents) > 0:
-                            name = dd.contents[0].strip().replace('<', '').strip()
-                            data['name'] = name
-                        email_tag = dd.find("a")
-                        if email_tag and "mailto:" in email_tag.get("href", ""):
-                            data["email"] = email_tag.text.strip()
-                    elif "Date" in dt_text:
-                        data["date"] = dd_text
-                    elif "Nominees" in dt_text:
-                        data["nominee"] = dd_text
-                    elif "Feedback" in dt_text:
-                        pre_tag = dd.find("pre")
-                        if pre_tag:
-                            data["feedback"] = pre_tag.text.strip()
-                    elif "Subject" in dt_text:
-                        data["subject"] = dd_text
-
+            data = _parse_feedback_entry(entry)
             if data:
                 feedback_data.append(data)
 
@@ -107,31 +113,7 @@ def parse_feedback_for_nominee(nominee_id, force_metadata=False, force_feedback=
         feedback_entries = comment_tab_pane.find_all("dl", class_="row")
 
         for entry in feedback_entries:
-            data = {}
-            dts = entry.find_all("dt")
-            for dt in dts:
-                dt_text = dt.text.strip()
-                dd = dt.find_next_sibling("dd")
-                if dd:
-                    dd_text = dd.text.strip()
-                    if "From" in dt_text:
-                        if len(dd.contents) > 0:
-                            name = dd.contents[0].strip().replace('<', '').strip()
-                            data['name'] = name
-                        email_tag = dd.find("a")
-                        if email_tag and "mailto:" in email_tag.get("href", ""):
-                            data["email"] = email_tag.text.strip()
-                    elif "Date" in dt_text:
-                        data["date"] = dd_text
-                    elif "Positions" in dt_text:
-                        data["position"] = get_position_short_name(dd_text)
-                    elif "Feedback" in dt_text:
-                        pre_tag = dd.find("pre")
-                        if pre_tag:
-                            data["feedback"] = pre_tag.text.strip()
-                    elif "Subject" in dt_text:
-                        data["subject"] = dd_text
-            
+            data = _parse_feedback_entry(entry)
             if data:
                 position = data.pop("position", None)
                 if position not in feedback_data:
