@@ -192,6 +192,32 @@ def get_nominee_positions(force_metadata=False):
     NOMINEE_POSITIONS_DATA = nominee_positions_data['objects']
     return NOMINEE_POSITIONS_DATA
 
+NOMCOM_GROUP_ID = None
+def get_nomcom_group_id(force_metadata=False):
+    global NOMCOM_GROUP_ID
+    if NOMCOM_GROUP_ID:
+        return NOMCOM_GROUP_ID
+
+    nomcom_id = get_nomcom_id()
+    nomcom_group_file = f"data/nomcom/{nomcom_id}.json"
+    if not force_metadata and os.path.exists(nomcom_group_file):
+        with open(nomcom_group_file, "r", encoding="utf-8") as f:
+            NOMCOM_GROUP_ID = json.load(f)['group']
+            return NOMCOM_GROUP_ID
+
+    url = f"https://datatracker.ietf.org/api/v1/nomcom/nomcom/{nomcom_id}/"
+    response = requests.get(url)
+    response.raise_for_status()  # Raise an exception for HTTP errors
+    nomcom_data = response.json()
+
+    os.makedirs(os.path.dirname(nomcom_group_file), exist_ok=True)
+    with open(nomcom_group_file, "w", encoding="utf-8") as f:
+        json.dump(nomcom_data, f, indent=4)
+    print(f"Nomcom group data downloaded and saved to {nomcom_group_file}")
+    NOMCOM_GROUP_ID = nomcom_data['group']
+    return NOMCOM_GROUP_ID
+
+
 def get_active_nominees(force_metadata=False):
     global ACTIVE_NOMINEES_DATA
     if ACTIVE_NOMINEES_DATA:
