@@ -12,6 +12,8 @@ NOMINEES_BY_POSITION_DATA = None
 EMAILS_TO_PEOPLE_IDS = None
 PERSON_IDS_DOWNLOADED = []
 NOMINEE_IDS_DOWNLOADED = []
+NOMCOM_GROUP_INFO_DATA = None
+
 
 def load_nominees(force_metadata=False):
     global NOMINEES_DATA
@@ -216,6 +218,31 @@ def get_nomcom_group_id(force_metadata=False):
     print(f"Nomcom group data downloaded and saved to {nomcom_group_file}")
     NOMCOM_GROUP_ID = nomcom_data['group']
     return NOMCOM_GROUP_ID
+
+
+def get_nomcom_group_info(force_metadata=False):
+    global NOMCOM_GROUP_INFO_DATA
+    if NOMCOM_GROUP_INFO_DATA:
+        return NOMCOM_GROUP_INFO_DATA
+
+    nomcom_group_id = get_nomcom_group_id(force_metadata=force_metadata)
+    nomcom_group_info_file = f"data/nomcom_group_info.json"
+    if not force_metadata and os.path.exists(nomcom_group_info_file):
+        with open(nomcom_group_info_file, "r", encoding="utf-8") as f:
+            NOMCOM_GROUP_INFO_DATA = json.load(f)['objects']
+            return NOMCOM_GROUP_INFO_DATA
+
+    url = f"https://datatracker.ietf.org/api/v1/group/role/?group={nomcom_group_id}&limit=1000"
+    response = requests.get(url)
+    response.raise_for_status()  # Raise an exception for HTTP errors
+    nomcom_group_info_data = response.json()
+
+    os.makedirs(os.path.dirname(nomcom_group_info_file), exist_ok=True)
+    with open(nomcom_group_info_file, "w", encoding="utf-8") as f:
+        json.dump(nomcom_group_info_data, f, indent=4)
+    print(f"Nomcom group info data downloaded and saved to {nomcom_group_info_file}")
+    NOMCOM_GROUP_INFO_DATA = nomcom_group_info_data['objects']
+    return NOMCOM_GROUP_INFO_DATA
 
 
 def get_active_nominees(force_metadata=False):
