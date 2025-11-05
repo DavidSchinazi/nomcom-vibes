@@ -63,7 +63,7 @@ def get_person_id_from_email(email, force_metadata=False):
     return person_id
 
 def get_person_info_from_id(person_id, force_metadata=False):
-    global PERSON_IDS_LOADED
+    global PERSON_IDS_DOWNLOADED
     person_file = f"data/persons/{person_id}.json"
 
     if os.path.exists(person_file) and ((not force_metadata) or (person_id in PERSON_IDS_DOWNLOADED)):
