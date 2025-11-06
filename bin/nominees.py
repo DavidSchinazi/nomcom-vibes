@@ -13,6 +13,7 @@ EMAILS_TO_PEOPLE_IDS = None
 PERSON_IDS_DOWNLOADED = []
 NOMINEE_IDS_DOWNLOADED = []
 NOMCOM_GROUP_INFO_DATA = None
+NOMCOM_PERSON_IDS = None
 
 
 def load_nominees(force_metadata=False):
@@ -244,14 +245,18 @@ def get_nomcom_group_info(force_metadata=False):
     NOMCOM_GROUP_INFO_DATA = nomcom_group_info_data['objects']
     return NOMCOM_GROUP_INFO_DATA
 
-
 def is_email_in_nomcom(email, force_metadata=False):
-    nomcom_group_info = get_nomcom_group_info(force_metadata=force_metadata)
-    email_path = f"/api/v1/person/email/{email}/"
-    for nomcom_member in nomcom_group_info:
-        if nomcom_member['email'] == email_path:
-            return True
-    return False
+    global NOMCOM_PERSON_IDS
+    if not NOMCOM_PERSON_IDS:
+        NOMCOM_PERSON_IDS = []
+        nomcom_group_info = get_nomcom_group_info(force_metadata=force_metadata)
+        for nomcom_member in nomcom_group_info:
+            member_email_path = nomcom_member['email']
+            member_email = member_email_path.strip('/').split('/')[-1]
+            person_id = get_person_id_from_email(member_email, force_metadata=force_metadata)
+            NOMCOM_PERSON_IDS.append(person_id)
+        print(f"silly {NOMCOM_PERSON_IDS}")
+    return get_person_id_from_email(email, force_metadata=force_metadata) in NOMCOM_PERSON_IDS
 
 
 def get_active_nominees(force_metadata=False):
