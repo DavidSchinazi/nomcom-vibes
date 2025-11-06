@@ -227,7 +227,7 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write(wrap_in_html(f"Feedback Summary for {nominee_name}", body))
+        f.write(wrap_in_html(f"{nominee_name} {position_short_name}", body))
     print(f"Successfully summarized {input_file} for {position_short_name} and saved to {output_file}")
 
 def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
@@ -298,7 +298,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write(wrap_in_html(f"Nominee Summary for {position_full_name}", body))
+        f.write(wrap_in_html(f"{position_short_name}", body))
     print(f"Successfully created summary for position {position_full_name} and saved to {output_file}")
 
 
@@ -325,7 +325,7 @@ def create_index_page(force_metadata=False):
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write(wrap_in_html("", body))
+        f.write(wrap_in_html("NomCom 2025", body))
     print(f"Successfully created overall summary and saved to {output_file}")
 
 
