@@ -3,6 +3,7 @@ import argparse
 import requests
 import json
 import os
+import random
 from positions import get_nomcom_id, get_position_name, get_position_short_name
 
 NOMINEES_DATA = None
@@ -245,6 +246,18 @@ def get_nomcom_group_info(force_metadata=False):
     NOMCOM_GROUP_INFO_DATA = nomcom_group_info_data['objects']
     return NOMCOM_GROUP_INFO_DATA
 
+def get_random_voting_members(force_metadata=False):
+    """Gets the list of voting members and returns them in a random order."""
+    nomcom_group_info = get_nomcom_group_info(force_metadata=force_metadata)
+    voting_members = []
+    for member in nomcom_group_info:
+        if member['name'].endswith('/member/'):
+            person_id = member['person'].strip('/').split('/')[-1]
+            person_info = get_person_info_from_id(person_id, force_metadata=force_metadata)
+            voting_members.append(person_info['name'])
+    random.shuffle(voting_members)
+    return voting_members
+
 def is_email_in_nomcom(email, force_metadata=False):
     global NOMCOM_PERSON_IDS
     if not NOMCOM_PERSON_IDS:
@@ -302,6 +315,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--force-metadata", action="store_true", help="Force download of metadata even if file exists")
     parser.add_argument("--info", action="store_true", help="Print info on each nominee, sorted.")
     parser.add_argument("--by-position", action="store_true", help="Print nominees by position.")
+    parser.add_argument("--random-voting-members", action="store_true", help="Print a randomized list of voting members.")
     parser.add_argument("nominee_id", nargs='?', help="Get info about a specific nominee")
     args = parser.parse_args()
 
@@ -309,6 +323,8 @@ if __name__ == "__main__":
         print_nominee_info(force_metadata=args.force_metadata)
     elif args.by_position:
         print(json.dumps(get_nominees_by_position(force_metadata=args.force_metadata), indent=4))
+    elif args.random_voting_members:
+        print(json.dumps(get_random_voting_members(force_metadata=args.force_metadata), indent=4))
     elif args.nominee_id:
         print(json.dumps(get_nominee_info(args.nominee_id, force_metadata=args.force_metadata), indent=4))
     else:
