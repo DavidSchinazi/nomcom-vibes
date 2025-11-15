@@ -268,7 +268,6 @@ def is_email_in_nomcom(email, force_metadata=False):
             member_email = member_email_path.strip('/').split('/')[-1]
             person_id = get_person_id_from_email(member_email, force_metadata=force_metadata)
             NOMCOM_PERSON_IDS.append(person_id)
-        print(f"silly {NOMCOM_PERSON_IDS}")
     return get_person_id_from_email(email, force_metadata=force_metadata) in NOMCOM_PERSON_IDS
 
 
