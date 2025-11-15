@@ -162,7 +162,7 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
         summary = "<p>No feedback for this position.</p>"
     else:
         if position == 'IAB':
-            prompt = "We need to pick six people for the role of Internet Architecture Board (IAB) Member. Based on the feedback for these nominees, who are the six that the community thinks are the best choice?"
+            prompt = "We need to pick six people for the role of Internet Architecture Board (IAB) Member. Based on the feedback for these nominees, who are the six that the community thinks are the best choice? Rank all of the nominees from best to worst."
         else:
             position_full = get_position_full_name(position)
             prompt = f"We need to pick one person for the role of {position_full}. Based on the following feedback for these nominees, who does the community think is the best choice?"
