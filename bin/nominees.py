@@ -201,11 +201,11 @@ def get_nominee_info(nominee_id, force_metadata=False):
     person_id = get_person_id_from_email(email, force_metadata=force_metadata)
     nominee_info = get_person_info_from_id(person_id, force_metadata=force_metadata)
 
-    url = f'https://datatracker.ietf.org/api/v1/meeting/attended/?person={nominee_info["id"]}&limit=1'
+    url = f'https://datatracker.ietf.org/api/v1/meeting/registration/?person={nominee_info["id"]}&limit=1'
     response = requests.get(url)
     response.raise_for_status()
     attended_data = response.json()
-    nominee_info['num_meetings_attended'] = attended_data['meta']['total_count']
+    nominee_info['num_meetings_registered'] = attended_data['meta']['total_count']
 
     url = f'https://datatracker.ietf.org/api/v1/doc/documentauthor/?email={email}&limit=1000'
     response = requests.get(url)
@@ -283,9 +283,9 @@ def print_nominee_info(force_metadata=False):
     for nominee in nominees_data:
         nominee_info = get_nominee_info(nominee['id'], force_metadata=force_metadata)
         name = nominee_info['name']
-        meetings_attended = nominee_info['num_meetings_attended']
+        meetings_registered = nominee_info['num_meetings_registered']
         num_documents = nominee_info['num_documents']
-        nominee_stats.append({'name': name, 'meetings': meetings_attended, 'documents': num_documents})
+        nominee_stats.append({'name': name, 'meetings': meetings_registered, 'documents': num_documents})
 
     nominee_stats.sort(key=lambda x: x['meetings'] + x['documents'], reverse=True)
     max_name_len = max(len(item['name']) for item in nominee_stats)
