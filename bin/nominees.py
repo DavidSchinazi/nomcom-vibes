@@ -249,6 +249,33 @@ def get_nominee_info(nominee_id, force_metadata=False):
 
     return nominee_info
 
+def print_info_from_email(email, force_metadata=False):
+    person_id = get_person_id_from_email(email, force_metadata=force_metadata)
+    meetings_attended = get_meetings_attended_from_person_id(person_id, force_metadata=force_metadata)
+
+    meetings = {}
+    for session in meetings_attended['objects']:
+        session_id = session['session'].strip('/').split('/')[-1]
+        session_info = get_session_info_from_id(session_id, force_metadata=force_metadata)
+
+        meeting_id = session_info['meeting'].strip('/').split('/')[-1]
+        group_id = session_info['group'].strip('/').split('/')[-1]
+
+        meeting_info = get_meeting_info_from_id(meeting_id, force_metadata=force_metadata)
+        group_info = get_group_info_from_id(group_id, force_metadata=force_metadata)
+
+        meeting_number = meeting_info['number']
+        if meeting_number not in meetings:
+            meetings[meeting_number] = []
+
+        meetings[meeting_number].append(group_info['acronym'])
+
+    for meeting_number in sorted(meetings.keys()):
+        group_str = ', '.join(sorted(meetings[meeting_number]))
+        ietf_str = 'IETF ' if meeting_number.isdigit() else ''
+        print(f"{ietf_str}{meeting_number}: {group_str}")
+
+
 def print_nominee_info(force_metadata=False):
     """Prints each nominee and the number of IETF meetings they have attended, sorted in descending order."""
     nominees_data = get_active_nominees(force_metadata=force_metadata)
@@ -408,6 +435,7 @@ if __name__ == "__main__":
     parser.add_argument("--info", action="store_true", help="Print info on each nominee, sorted.")
     parser.add_argument("--by-position", action="store_true", help="Print nominees by position.")
     parser.add_argument("--random-voting-members", action="store_true", help="Print a randomized list of voting members.")
+    parser.add_argument("--email", help="Get info about a specific email address")
     parser.add_argument("nominee_id", nargs='?', help="Get info about a specific nominee")
     args = parser.parse_args()
 
@@ -417,6 +445,8 @@ if __name__ == "__main__":
         print(json.dumps(get_nominees_by_position(force_metadata=args.force_metadata), indent=4))
     elif args.random_voting_members:
         print(json.dumps(get_random_voting_members(force_metadata=args.force_metadata), indent=4))
+    elif args.email:
+        print_info_from_email(args.email, force_metadata=args.force_metadata)
     elif args.nominee_id:
         print(json.dumps(get_nominee_info(args.nominee_id, force_metadata=args.force_metadata), indent=4))
     else:
