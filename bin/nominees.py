@@ -13,6 +13,7 @@ NOMINEES_BY_POSITION_DATA = None
 EMAILS_TO_PEOPLE_IDS = None
 PERSON_IDS_DOWNLOADED = []
 GROUP_IDS_DOWNLOADED = []
+MEETING_IDS_DOWNLOADED = []
 NOMINEE_IDS_DOWNLOADED = []
 NOMCOM_GROUP_INFO_DATA = None
 NOMCOM_PERSON_IDS = None
@@ -107,6 +108,28 @@ def get_group_info_from_id(group_id, force_metadata=False):
     GROUP_IDS_DOWNLOADED.append(group_id)
 
     return group_data
+
+
+def get_meeting_info_from_id(meeting_id, force_metadata=False):
+    global MEETING_IDS_DOWNLOADED
+    meeting_file = f"data/meetings/{meeting_id}.json"
+
+    if os.path.exists(meeting_file) and ((not force_metadata) or (meeting_id in MEETING_IDS_DOWNLOADED)):
+        with open(meeting_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    url = f'https://datatracker.ietf.org/api/v1/meeting/meeting/{meeting_id}/'
+    response = requests.get(url)
+    response.raise_for_status()
+    meeting_data = response.json()
+
+    os.makedirs(os.path.dirname(meeting_file), exist_ok=True)
+    with open(meeting_file, "w", encoding="utf-8") as f:
+        json.dump(meeting_data, f, indent=4)
+    print(f"Meeting data downloaded and saved to {meeting_file}")
+    MEETING_IDS_DOWNLOADED.append(meeting_id)
+
+    return meeting_data
 
 
 def get_person_info_from_email(email, force_metadata=False):
