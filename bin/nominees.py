@@ -12,6 +12,7 @@ ACTIVE_NOMINEES_DATA = None
 NOMINEES_BY_POSITION_DATA = None
 EMAILS_TO_PEOPLE_IDS = None
 PERSON_IDS_DOWNLOADED = []
+GROUP_IDS_DOWNLOADED = []
 NOMINEE_IDS_DOWNLOADED = []
 NOMCOM_GROUP_INFO_DATA = None
 NOMCOM_PERSON_IDS = None
@@ -84,6 +85,29 @@ def get_person_info_from_id(person_id, force_metadata=False):
     PERSON_IDS_DOWNLOADED.append(person_id)
 
     return person_data
+
+
+def get_group_info_from_id(group_id, force_metadata=False):
+    global GROUP_IDS_DOWNLOADED
+    group_file = f"data/groups/{group_id}.json"
+
+    if os.path.exists(group_file) and ((not force_metadata) or (group_id in GROUP_IDS_DOWNLOADED)):
+        with open(group_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    url = f'https://datatracker.ietf.org/api/v1/group/group/{group_id}/'
+    response = requests.get(url)
+    response.raise_for_status()
+    group_data = response.json()
+
+    os.makedirs(os.path.dirname(group_file), exist_ok=True)
+    with open(group_file, "w", encoding="utf-8") as f:
+        json.dump(group_data, f, indent=4)
+    print(f"Group data downloaded and saved to {group_file}")
+    GROUP_IDS_DOWNLOADED.append(group_id)
+
+    return group_data
+
 
 def get_person_info_from_email(email, force_metadata=False):
     return get_person_info_from_id(get_person_id_from_email(email, force_metadata=force_metadata), force_metadata=force_metadata)
