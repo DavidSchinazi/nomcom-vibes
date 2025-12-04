@@ -275,6 +275,7 @@ def get_nominee_info(nominee_id, force_metadata=False):
 def print_info_from_email(email, force_metadata=False):
     person_id = get_person_id_from_email(email, force_metadata=force_metadata)
     meetings_attended = get_meetings_attended_from_person_id(person_id, force_metadata=force_metadata)
+    registrations_data = get_registrations_from_person_id(person_id, force_metadata=force_metadata)
 
     meetings = {}
     for session in meetings_attended['objects']:
@@ -289,12 +290,20 @@ def print_info_from_email(email, force_metadata=False):
 
         meeting_number = meeting_info['number']
         if meeting_number not in meetings:
-            meetings[meeting_number] = []
+            meetings[meeting_number] = set()
 
-        meetings[meeting_number].append(group_info['acronym'])
+        meetings[meeting_number].add(group_info['acronym'])
 
-    for meeting_number in sorted(meetings.keys()):
-        group_str = ', '.join(sorted(meetings[meeting_number]))
+    for registration in registrations_data['objects']:
+        meeting_id = registration['meeting'].strip('/').split('/')[-1]
+        meeting_info = get_meeting_info_from_id(meeting_id, force_metadata=force_metadata)
+        meeting_number = meeting_info['number']
+        if meeting_number not in meetings:
+            meetings[meeting_number] = set()
+        # meetings[meeting_number].add('Registered')
+
+    for meeting_number in sorted(meetings.keys(), key=lambda x: '2-' + x.zfill(9) if x.isdigit() else '2-' + x):
+        group_str = ', '.join(sorted(list(meetings[meeting_number])))
         ietf_str = 'IETF ' if meeting_number.isdigit() else ''
         print(f"{ietf_str}{meeting_number}: {group_str}")
 
