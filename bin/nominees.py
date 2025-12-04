@@ -277,7 +277,7 @@ def print_info_from_email(email, force_metadata=False):
     meetings_attended = get_meetings_attended_from_person_id(person_id, force_metadata=force_metadata)
     registrations_data = get_registrations_from_person_id(person_id, force_metadata=force_metadata)
 
-    meetings = {}
+    meetings_data = {}
     for session in meetings_attended['objects']:
         session_id = session['session'].strip('/').split('/')[-1]
         session_info = get_session_info_from_id(session_id, force_metadata=force_metadata)
@@ -289,21 +289,23 @@ def print_info_from_email(email, force_metadata=False):
         group_info = get_group_info_from_id(group_id, force_metadata=force_metadata)
 
         meeting_number = meeting_info['number']
-        if meeting_number not in meetings:
-            meetings[meeting_number] = set()
+        meeting_date = meeting_info['date']
+        if meeting_number not in meetings_data:
+            meetings_data[meeting_number] = {'date': meeting_date, 'groups': set()}
 
-        meetings[meeting_number].add(group_info['acronym'])
+        meetings_data[meeting_number]['groups'].add(group_info['acronym'])
 
     for registration in registrations_data['objects']:
         meeting_id = registration['meeting'].strip('/').split('/')[-1]
         meeting_info = get_meeting_info_from_id(meeting_id, force_metadata=force_metadata)
         meeting_number = meeting_info['number']
-        if meeting_number not in meetings:
-            meetings[meeting_number] = set()
-        # meetings[meeting_number].add('Registered')
+        meeting_date = meeting_info['date']
+        if meeting_number not in meetings_data:
+            meetings_data[meeting_number] = {'date': meeting_date, 'groups': set()}
 
-    for meeting_number in sorted(meetings.keys(), key=lambda x: '2-' + x.zfill(9) if x.isdigit() else '2-' + x):
-        group_str = ', '.join(sorted(list(meetings[meeting_number])))
+    sorted_meetings = sorted(meetings_data.items(), key=lambda item: item[1]['date'])
+    for meeting_number, details in sorted_meetings:
+        group_str = ', '.join(sorted(list(details['groups'])))
         ietf_str = 'IETF ' if meeting_number.isdigit() else ''
         print(f"{ietf_str}{meeting_number}: {group_str}")
 
