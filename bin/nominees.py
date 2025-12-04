@@ -12,6 +12,7 @@ ACTIVE_NOMINEES_DATA = None
 NOMINEES_BY_POSITION_DATA = None
 EMAILS_TO_PEOPLE_IDS = None
 PERSON_IDS_DOWNLOADED = []
+REGISTRATIONS_DOWNLOADED = []
 GROUP_IDS_DOWNLOADED = []
 MEETING_IDS_DOWNLOADED = []
 SESSION_IDS_DOWNLOADED = []
@@ -88,6 +89,28 @@ def get_person_info_from_id(person_id, force_metadata=False):
     PERSON_IDS_DOWNLOADED.append(person_id)
 
     return person_data
+
+
+def get_registrations_from_person_id(person_id, force_metadata=False):
+    global REGISTRATIONS_DOWNLOADED
+    registration_file = f"data/registrations/{person_id}.json"
+
+    if os.path.exists(registration_file) and ((not force_metadata) or (person_id in REGISTRATIONS_DOWNLOADED)):
+        with open(registration_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    url = f'https://datatracker.ietf.org/api/v1/meeting/registration/?person={person_id}&limit=1000'
+    response = requests.get(url)
+    response.raise_for_status()
+    registration_data = response.json()
+
+    os.makedirs(os.path.dirname(registration_file), exist_ok=True)
+    with open(registration_file, "w", encoding="utf-8") as f:
+        json.dump(registration_data, f, indent=4)
+    print(f"Registration data downloaded and saved to {registration_file}")
+    REGISTRATIONS_DOWNLOADED.append(person_id)
+
+    return registration_data
 
 
 def get_group_info_from_id(group_id, force_metadata=False):
