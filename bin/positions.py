@@ -24,7 +24,7 @@ def get_nomcom_id():
     return 16
 
 def get_position_short_name(name):
-    return POSITION_SHORT_NAMES[name]
+    return POSITION_SHORT_NAMES.get(name, name)
 
 def get_position_full_name(short_name):
     for full_name, s_name in POSITION_SHORT_NAMES.items():
