@@ -97,7 +97,7 @@ def get_topic_id_from_position_name(position_full_name, force_metadata=False):
         for topic in topics:
             if expanded_full_name in topic['subject']:
                 return topic['id']
-    if 'Internet Architecture Board' in position_full_name or 'Internet Architecture Board' in expanded_full_name:
+    if 'Internet Architecture Board' in position_full_name or (expanded_full_name is not None and 'Internet Architecture Board' in expanded_full_name):
         for topic in topics:
             if 'IAB' in topic['subject']:
                 return topic['id']

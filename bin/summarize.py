@@ -130,6 +130,8 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
             with open(summary_file, "w", encoding="utf-8") as f:
                 f.write(summary)
             NOMINEE_POSITIONS_SUMMARIZED.append(nominee_position)
+        else:
+            print("Failed to get AI summary")
     return summary
 
 def get_ai_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):

@@ -46,6 +46,9 @@ def parse_feedback_for_position(position_name, force_metadata=False, force_feedb
     global PARSED_TOPIC_IDS
     save_html_feedback_for_position(position_name, force_feedback=force_feedback)
     topic_id = get_topic_id_from_position_name(position_name, force_metadata=force_metadata)
+    if topic_id is None:
+        print(f"Unknown position_name {position_name}")
+        return {}
     input_file = f"data/feedback_html/topic_{topic_id}.html"
     output_file = f"data/feedback_json/topic_{topic_id}.json"
     if os.path.exists(output_file) and ((not force_parse) or (topic_id in PARSED_TOPIC_IDS)):

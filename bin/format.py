@@ -108,6 +108,8 @@ def _create_community_feedback_section(feedback_list):
 
     feedback_html = ""
     for feedback in feedback_list:
+        if 'email' not in feedback:
+            continue
         name = feedback["name"]
         email = feedback["email"]
         date = feedback["date"]
@@ -260,12 +262,15 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     topic_id = get_topic_id_from_position_name(position_short_name, force_metadata=force_metadata)
-    input_file = os.path.join("data/feedback_json", f"topic_{topic_id}.json")
-
-    # Make sure the parsed JSON is there.
-    parse_feedback_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
-    with open(input_file, "r", encoding="utf-8") as f:
-        feedback_dict = json.load(f)
+    if topic_id is not None:
+        input_file = os.path.join("data/feedback_json", f"topic_{topic_id}.json")
+        # Make sure the parsed JSON is there.
+        parse_feedback_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
+        with open(input_file, "r", encoding="utf-8") as f:
+            feedback_dict = json.load(f)
+    else:
+        print(f"Failed to find topic_id for position_short_name {position_short_name}")
+        feedback_dict = {}
 
     nominees_by_position = get_nominees_by_position(force_metadata=force_metadata)
     nominee_ids = nominees_by_position.get(position_short_name)
@@ -293,7 +298,7 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     body += '</div>\n'
     summary = get_ai_summary_for_position(position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
     body += _create_ai_summary_section(summary)
-    feedback_list = feedback_dict["feedback"]
+    feedback_list = feedback_dict.get("feedback", None)
     body += _create_community_feedback_section(feedback_list)
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
