@@ -11,6 +11,7 @@ POSITION_SHORT_NAMES = {
     "Applications and Real Time (ART) AD": "ART",
     "Internet Architecture Board, Member": "IAB",
     "IETF LLC Board, Director": "LLC",
+    "IETF LLC Board, Director (mid-term + 3 year term)": "LLC2",
     "IETF Trust, Trustee": "Trust",
     "IETF Chair / GEN AD": "GEN",
     "Internet (INT) AD": "INT",
