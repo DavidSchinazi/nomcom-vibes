@@ -286,6 +286,8 @@ def create_page_for_position(position_short_name, force_metadata=False, force_fe
     body += '<div style="background-color: #ddeeff; padding: 1rem;">\n'
     body += "<ul style=\"font-size: 1.2em; list-style-type: none; padding-left: 0;\">\n"
     for nominee_id in nominee_ids:
+        # Make sure page is there.
+        create_page_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
         nominee_info = get_nominee_info(nominee_id, force_metadata=force_metadata)
         nominee_name = nominee_info["name"]
         nominee_photo = nominee_info.get("photo")
