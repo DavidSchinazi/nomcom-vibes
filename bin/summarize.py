@@ -65,11 +65,13 @@ def get_ai_summary(prompt, use_pro_model=False, summaries_forced=None):
     """Summarizes the feedback text using the Gemini API."""
     try:
         api_key = get_gemini_api_key(summaries_forced=summaries_forced)
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro-latest' if use_pro_model else 'gemini-flash-latest')
-        response = model.generate_content(prompt)
-        summary_text = response.text
+        from google import genai
+        client = genai.Client(api_key=api_key)
+        response = client.interactions.create(
+            model='gemini-pro-latest' if use_pro_model else 'gemini-flash-latest',
+            input=prompt
+        )
+        summary_text = response.output_text
         # Extract HTML from markdown code block if present
         match = re.search(r"<[a-zA-Z][^>]*>.*</[a-zA-Z][^>]*>", summary_text, re.DOTALL)
         if match:
