@@ -15,6 +15,7 @@ POSITION_SHORT_NAMES = {
     "IETF Trust, Trustee": "Trust",
     "IETF Chair / GEN AD": "GEN",
     "Internet (INT) AD": "INT",
+    "Mid-Term Vacancy Internet (INT) AD": "INT2",
     "Operations and Management (OPS) AD": "OPS",
     "Routing (RTG) AD": "RTG",
     "Security (SEC) AD": "SEC",
