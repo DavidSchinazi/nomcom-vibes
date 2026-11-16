@@ -4,6 +4,7 @@ import requests
 import json
 import os
 
+NOMCOM_ID = None
 POSITIONS_DATA = None
 TOPICS_DATA = None
 
@@ -23,7 +24,41 @@ POSITION_SHORT_NAMES = {
 }
 
 def get_nomcom_id():
-    return 16
+    global NOMCOM_ID
+    if NOMCOM_ID is not None:
+        return NOMCOM_ID
+
+    nomcom_id_file = "config/nomcom_id.txt"
+    if os.path.exists(nomcom_id_file):
+        with open(nomcom_id_file, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if content:
+                NOMCOM_ID = int(content)
+                return NOMCOM_ID
+
+    year = input("Please enter the year that your NomCom was selected (e.g., 2026): ").strip()
+    if not year:
+        raise ValueError("NomCom year cannot be empty")
+
+    url = "https://datatracker.ietf.org/api/v1/nomcom/nomcom/?limit=1000"
+    response = requests.get(url)
+    response.raise_for_status()
+    nomcoms_data = response.json()
+
+    target = f"nomcom{year}"
+    for entry in nomcoms_data.get("objects", []):
+        public_key = entry.get("public_key") or ""
+        if target in public_key:
+            NOMCOM_ID = int(entry["id"])
+            break
+
+    if NOMCOM_ID is None:
+        raise ValueError(f"Could not find NomCom ID for year {year}")
+
+    os.makedirs(os.path.dirname(nomcom_id_file), exist_ok=True)
+    with open(nomcom_id_file, "w", encoding="utf-8") as f:
+        f.write(f"{NOMCOM_ID}\n")
+    return NOMCOM_ID
 
 def get_position_short_name(name):
     return POSITION_SHORT_NAMES.get(name, name)
