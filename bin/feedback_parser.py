@@ -7,7 +7,7 @@ import os
 import sys
 from nominees import get_active_nominees, get_nominee_info
 from positions import get_position_short_name, get_positions, get_topic_id_from_position_name
-from feedback import save_html_feedback_for_nominee, save_html_feedback_for_position
+from feedback import save_html_feedback_for_nominee, save_html_feedback_for_position, is_sign_in_page
 
 PARSED_TOPIC_IDS = []
 PARSED_NOMINEE_IDS = []
@@ -60,6 +60,10 @@ def parse_feedback_for_position(position_name, force_metadata=False, force_feedb
     with open(input_file, "r", encoding="utf-8") as f:
         html_content = f.read()
 
+    if is_sign_in_page(html_content):
+        print(f"Warning: {input_file} contains a Sign In page; cannot extract feedback.")
+        return {"feedback": []}
+
     # Parse the HTML content
     soup = BeautifulSoup(html_content, "lxml")
 
@@ -97,11 +101,29 @@ def parse_feedback_for_nominee(nominee_id, force_metadata=False, force_feedback=
     if os.path.exists(output_file) and ((not force_parse) or (nominee_id in PARSED_NOMINEE_IDS)):
         with open(output_file, "r", encoding="utf-8") as json_file:
             result = json.load(json_file)
+        if "nominee_info" in result and "positions" in result["nominee_info"]:
+            result["nominee_info"]["positions"] = {
+                get_position_short_name(p): s
+                for p, s in result["nominee_info"]["positions"].items()
+            }
+        if "feedback" in result:
+            result["feedback"] = {
+                get_position_short_name(p): flist
+                for p, flist in result["feedback"].items()
+            }
+        if "questionnaires" in result:
+            result["questionnaires"] = {
+                get_position_short_name(p): q
+                for p, q in result["questionnaires"].items()
+            }
         return result
 
     # Read the HTML file
     with open(input_file, "r", encoding="utf-8") as f:
         html_content = f.read()
+
+    if is_sign_in_page(html_content):
+        print(f"Warning: {input_file} contains a Sign In page; cannot extract feedback.")
 
     # Parse the HTML content
     soup = BeautifulSoup(html_content, "lxml")
@@ -119,6 +141,8 @@ def parse_feedback_for_nominee(nominee_id, force_metadata=False, force_feedback=
             data = _parse_feedback_entry(entry)
             if data:
                 position = data.pop("position", None)
+                if position:
+                    position = get_position_short_name(position)
                 if position not in feedback_data:
                     feedback_data[position] = []
                 feedback_data[position].append(data)

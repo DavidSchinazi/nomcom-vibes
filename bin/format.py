@@ -8,7 +8,7 @@ from feedback import get_session_id
 from feedback_parser import parse_feedback_for_nominee, parse_feedback_for_position
 from nominees import get_active_nominees, get_nominees_by_position, get_nominee_info, get_person_info_from_email, is_email_in_nomcom
 from summarize import get_ai_summary_for_nominee_and_position, get_ai_summary_for_position
-from positions import get_position_short_name, get_position_full_name, get_positions, get_topic_id_from_position_name
+from positions import get_position_short_name, get_position_full_name, get_positions, get_topic_id_from_position_name, get_nomcom_year
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -69,9 +69,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </body>
 </html>"""
 
+def get_source_logo_path():
+    """Determines the appropriate logo path based on NomCom year and available files."""
+    try:
+        year = str(get_nomcom_year())
+    except Exception:
+        year = None
+
+    if year == "2026":
+        for candidate in ["static/logo-2026.jpg", "logo-2026.jpg"]:
+            if os.path.exists(candidate):
+                return candidate
+    elif year:
+        for candidate in [f"static/logo-{year}.jpg", f"logo-{year}.jpg"]:
+            if os.path.exists(candidate):
+                return candidate
+
+    for candidate in ["static/logo.jpg", "logo.jpg"]:
+        if os.path.exists(candidate):
+            return candidate
+
+    return "static/logo.jpg"
+
 def copy_logo():
     """Copies the logo to the data directory."""
-    source_logo_path = "static/logo.jpg"
+    source_logo_path = get_source_logo_path()
     destination_logo_path = "output/data/logo.jpg"
     if os.path.exists(source_logo_path):
         os.makedirs(os.path.dirname(destination_logo_path), exist_ok=True)
@@ -101,7 +123,7 @@ def _create_ai_summary_section(summary):
 </div>
 '''
 
-def _create_community_feedback_section(feedback_list):
+def _create_community_feedback_section(feedback_list, force_metadata=False):
     """Creates the HTML section for community feedback."""
     if not feedback_list:
         return ""
@@ -115,7 +137,7 @@ def _create_community_feedback_section(feedback_list):
         date = feedback["date"]
         contents = feedback["feedback"].replace("\n", "<br/>")
         photo = _get_photo_for_email(email)
-        color = "red" if is_email_in_nomcom(email, force_metadata=True) else "black"
+        color = "red" if is_email_in_nomcom(email, force_metadata=force_metadata) else "black"
 
         feedback_html += f'''<div class="feedback">
 <p><img src="{photo}" width="40" height="40" style="margin-right: 1rem; object-fit: contain;"/> <a href="https://datatracker.ietf.org/person/{email}" class="feedback-author" title="{date}" style="color: {color};">{name}</a>: {contents}</p>
@@ -158,12 +180,12 @@ def _create_interview_section(feedback_list):
 '''
 
 
-def create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position_short_name):
+def create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position_short_name, force_metadata=False):
     """Creates an HTML file with the summary and feedback."""
     feedback_with_subject = [item for item in feedback_list if "subject" in item]
     feedback_without_subject = [item for item in feedback_list if "subject" not in item]
 
-    interview_feedback = [item for item in feedback_without_subject if ("interview" in item["feedback"].lower() or "transcript" in item["feedback"].lower() or "nomcomietf@gmail.com" in item["feedback"].lower() or "nomcomietf2@gmail.com" in item["feedback"].lower()) and is_email_in_nomcom(item["email"], force_metadata=True)]
+    interview_feedback = [item for item in feedback_without_subject if ("interview" in item["feedback"].lower() or "transcript" in item["feedback"].lower() or "nomcomietf@gmail.com" in item["feedback"].lower() or "nomcomietf2@gmail.com" in item["feedback"].lower()) and is_email_in_nomcom(item["email"], force_metadata=force_metadata)]
     community_feedback = [item for item in feedback_without_subject if item not in interview_feedback]
 
     nominee_info = feedback_dict["nominee_info"]
@@ -194,9 +216,9 @@ def create_page_for_nominee_and_position(summary, feedback_list, input_file, out
     body += f'<b>Meetings Registered</b>: {nominee_info["num_meetings_registered"]}<br/>\n'
     body += f'<b>Co-authored</b>: {nominee_info["num_rfcs"]} RFCs, {nominee_info["num_wg_drafts"]} WG Drafts, {nominee_info["num_individual_drafts"]} Individual Drafts<br/>\n'
     other_positions = [
-        f'<a href="{nominee_info["nominee_id"]}_{p}.html">{get_position_full_name(p)}</a>'
+        f'<a href="{nominee_info["nominee_id"]}_{get_position_short_name(p)}.html">{get_position_full_name(get_position_short_name(p))}</a>'
         for p, state in nominee_info["positions"].items()
-        if state == "accepted" and p != position_short_name
+        if state == "accepted" and get_position_short_name(p) != position_short_name
     ]
     if other_positions:
         body += f'<b>Also Accepted Nominations For</b>: {", ".join(other_positions)}<br/>\n'
@@ -239,22 +261,18 @@ def create_page_for_nominee(nominee_id, force_metadata=False, force_feedback=Fal
     input_file = os.path.join("data/feedback_json", f"{nominee_id}.json")
 
     # Make sure the parsed JSON is there.
-    parse_feedback_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
+    feedback_dict = parse_feedback_for_nominee(nominee_id, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse)
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    with open(input_file, "r", encoding="utf-8") as f:
-        feedback_dict = json.load(f)
-
-    for position_short_name, state in feedback_dict["nominee_info"]["positions"].items():
+    for position_name, state in feedback_dict["nominee_info"]["positions"].items():
         if state != "accepted":
             continue
+        position_short_name = get_position_short_name(position_name)
         feedback_list = feedback_dict["feedback"].get(position_short_name, [])
         summary = get_ai_summary_for_nominee_and_position(nominee_id, position_short_name, force_metadata=force_metadata, force_feedback=force_feedback, force_parse=force_parse, redo_summaries=redo_summaries, summaries_forced=summaries_forced)
         output_filename = f"{nominee_id}_{position_short_name}.html"
         output_file = os.path.join(output_dir, output_filename)
 
-        create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position_short_name)
+        create_page_for_nominee_and_position(summary, feedback_list, input_file, output_file, feedback_dict, position_short_name, force_metadata=force_metadata)
 
 def create_page_for_position(position_short_name, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
     position_full_name = get_position_full_name(position_short_name)
@@ -315,9 +333,9 @@ def create_index_page(force_metadata=False):
         os.makedirs(output_dir)
 
     positions = get_positions(force_metadata=force_metadata)
-    iab_position = [p for p in positions if p['name'] == 'Internet Architecture Board, Member']
-    iesg_positions = sorted([p for p in positions if p['is_iesg_position'] and p['name'] != 'Internet Architecture Board, Member'], key=lambda p: p['name'])
-    non_iesg_positions = sorted([p for p in positions if not p['is_iesg_position'] and p['name'] != 'Internet Architecture Board, Member'], key=lambda p: p['name'])
+    iab_position = [p for p in positions if get_position_short_name(p['name']) == 'IAB']
+    iesg_positions = sorted([p for p in positions if p['is_iesg_position'] and get_position_short_name(p['name']) != 'IAB'], key=lambda p: p['name'])
+    non_iesg_positions = sorted([p for p in positions if not p['is_iesg_position'] and get_position_short_name(p['name']) != 'IAB'], key=lambda p: p['name'])
     sorted_positions = iab_position + non_iesg_positions + iesg_positions
 
     output_file = os.path.join(output_dir, "index.html")
@@ -330,9 +348,10 @@ def create_index_page(force_metadata=False):
         body += f'<li><a href="data/{position_short_name}.html">{position_full_name}</a></li>\n'
     body += "</ul>\n"
 
+    year = get_nomcom_year()
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write(wrap_in_html("NomCom 2025", body))
+        f.write(wrap_in_html(f"NomCom {year}", body))
     print(f"Successfully created overall summary and saved to {output_file}")
 
 

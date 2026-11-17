@@ -3,13 +3,28 @@ import argparse
 import requests
 import json
 import os
+import re
 from pathlib import Path
 from nominees import get_active_nominees
-from positions import get_topic_id_from_position_name, get_positions
+from positions import get_topic_id_from_position_name, get_positions, get_nomcom_year
 
 SESSION_ID = None
 FEEDBACK_NOMINEE_ID_DOWNLOADED = []
 FEEDBACK_TOPIC_DOWNLOADED = []
+
+def clean_session_id(raw_id):
+    if not raw_id:
+        return ""
+    cleaned = raw_id.strip()
+    if cleaned.startswith("sessionid="):
+        cleaned = cleaned[len("sessionid="):]
+    cleaned = cleaned.strip('"\' ;')
+    return cleaned
+
+def is_sign_in_page(content):
+    if not content:
+        return False
+    return bool(re.search(r'<title>\s*Sign in\s*</title>', content, re.IGNORECASE)) or ("/accounts/login/" in content and "Sign in" in content)
 
 def get_session_id():
     global SESSION_ID
@@ -17,21 +32,25 @@ def get_session_id():
         session_id_file = Path("config/session_id.txt")
         os.makedirs(os.path.dirname(session_id_file), exist_ok=True)
         if session_id_file.exists():
-            SESSION_ID = session_id_file.read_text().strip()
+            raw_content = session_id_file.read_text().strip()
+            SESSION_ID = clean_session_id(raw_content)
+            if raw_content != SESSION_ID:
+                session_id_file.write_text(SESSION_ID)
         else:
+            year = get_nomcom_year()
             print("\nHello, and welcome to NomCom Vibes!\n")
             print("In order to download confidential NomCom feedback, this tool needs your IETF datatracker cookie.")
             print("To gather it, start your favorite browser and open Developer Tools.")
             print("For most browsers, you can do that by pressing Cmd-Option-I or Ctrl-Shift-I.")
             print("Then navigate to the NomCom private page at:\n")
-            print("https://datatracker.ietf.org/nomcom/2025/private/\n")
+            print(f"https://datatracker.ietf.org/nomcom/{year}/private/\n")
             print("You will need to log in and enter the NomCom private key if you haven't already.")
             print("Once you're able to see the NomCom private area, use Developer Tools to check HTTP headers.")
             print("You'll need to find either the \"Cookie\" header on the request, or the \"Set-Cookie\" header on the response.")
             print("You'll find multiple cookies there, and the one we need is \"sessionid\".")
             print("For example, it'll look like `sessionid=k5swyy3pnvstettpnvbw63kwnfrgk4zb;`.\n")
-            SESSION_ID = input("Please enter your IETF Datatracker session ID: ")
-            session_id_file.parent.mkdir(exist_ok=True)
+            raw_input = input("Please enter your IETF Datatracker session ID: ")
+            SESSION_ID = clean_session_id(raw_input)
             session_id_file.write_text(SESSION_ID)
     return SESSION_ID
 
@@ -39,14 +58,30 @@ def save_html_feedback_for_nominee(nominee_id, force_feedback=False):
     """Downloads and saves the HTML feedback for a single nominee."""
     global FEEDBACK_NOMINEE_ID_DOWNLOADED
     session_id = get_session_id()
+    year = get_nomcom_year()
     output_file = f"data/feedback_html/{nominee_id}.html"
-    if os.path.exists(output_file) and ((not force_feedback) or (nominee_id in FEEDBACK_NOMINEE_ID_DOWNLOADED)):
-        return
+    if os.path.exists(output_file) and not force_feedback and (nominee_id not in FEEDBACK_NOMINEE_ID_DOWNLOADED):
+        with open(output_file, "r", encoding="utf-8") as f:
+            if not is_sign_in_page(f.read()):
+                return
 
-    url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/nominee/{nominee_id}"
+    url = f"https://datatracker.ietf.org/nomcom/{year}/private/view-feedback/nominee/{nominee_id}"
     print(f"Downloading HTML feedback for nominee {nominee_id} from {url}")
-    response = requests.get(url, cookies={"sessionid": session_id})
-    response.raise_for_status()
+    try:
+        response = requests.get(url, cookies={"sessionid": session_id})
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        if os.path.exists(output_file):
+            print(f"Warning: Could not download feedback for nominee {nominee_id} from {url}: {e}")
+            return
+        raise
+
+    if is_sign_in_page(response.text) or "login" in response.url.lower():
+        raise PermissionError(
+            f"Failed to access confidential NomCom feedback at {url} (received Sign In page). "
+            f"Please verify that your session ID in config/session_id.txt is valid, unexpired, "
+            f"and has access to NomCom {year} private feedback."
+        )
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:
@@ -59,18 +94,34 @@ def save_html_feedback_for_position(position_name, force_feedback=False):
     """Downloads and saves the HTML feedback for a single position."""
     global FEEDBACK_TOPIC_DOWNLOADED
     session_id = get_session_id()
+    year = get_nomcom_year()
     topic_id = get_topic_id_from_position_name(position_name)
     if not topic_id:
         print(f"Could not find topic ID for position {position_name}")
         return
     output_file = f"data/feedback_html/topic_{topic_id}.html"
-    if os.path.exists(output_file) and ((not force_feedback) or (topic_id in FEEDBACK_TOPIC_DOWNLOADED)):
-        return
+    if os.path.exists(output_file) and not force_feedback and (topic_id not in FEEDBACK_TOPIC_DOWNLOADED):
+        with open(output_file, "r", encoding="utf-8") as f:
+            if not is_sign_in_page(f.read()):
+                return
 
-    url = f"https://datatracker.ietf.org/nomcom/2025/private/view-feedback/topic/{topic_id}"
+    url = f"https://datatracker.ietf.org/nomcom/{year}/private/view-feedback/topic/{topic_id}"
     print(f"Downloading HTML feedback for position {position_name} from {url}")
-    response = requests.get(url, cookies={"sessionid": session_id})
-    response.raise_for_status()
+    try:
+        response = requests.get(url, cookies={"sessionid": session_id})
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        if os.path.exists(output_file):
+            print(f"Warning: Could not download feedback for position {position_name} from {url}: {e}")
+            return
+        raise
+
+    if is_sign_in_page(response.text) or "login" in response.url.lower():
+        raise PermissionError(
+            f"Failed to access confidential NomCom feedback at {url} (received Sign In page). "
+            f"Please verify that your session ID in config/session_id.txt is valid, unexpired, "
+            f"and has access to NomCom {year} private feedback."
+        )
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:

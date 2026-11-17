@@ -3,28 +3,38 @@ import argparse
 import requests
 import json
 import os
+import re
 
 NOMCOM_ID = None
+NOMCOM_YEAR = None
 POSITIONS_DATA = None
 TOPICS_DATA = None
 
 POSITION_SHORT_NAMES = {
     "Applications and Real Time (ART) AD": "ART",
+    "Applications and Real-Time Area (ART) AD": "ART",
     "Internet Architecture Board, Member": "IAB",
+    "Internet Architecture Board (IAB), Member": "IAB",
     "IETF LLC Board, Director": "LLC",
     "IETF LLC Board, Director (mid-term + 3 year term)": "LLC2",
+    "IETF IPMC Board, Director": "IPMC",
     "IETF Trust, Trustee": "Trust",
     "IETF Chair / GEN AD": "GEN",
     "Internet (INT) AD": "INT",
+    "Internet Area (INT) AD": "INT",
     "Mid-Term Vacancy Internet (INT) AD": "INT2",
     "Operations and Management (OPS) AD": "OPS",
+    "Operations and Management Area (OPS) AD": "OPS",
     "Routing (RTG) AD": "RTG",
+    "Routing Area (RTG) AD": "RTG",
     "Security (SEC) AD": "SEC",
-    "Web and Internet Transport (WIT) AD": "WIT"
+    "Security Area (SEC) AD": "SEC",
+    "Web and Internet Transport (WIT) AD": "WIT",
+    "The Web and Internet Transport (WIT) AD": "WIT"
 }
 
 def get_nomcom_id():
-    global NOMCOM_ID
+    global NOMCOM_ID, NOMCOM_YEAR
     if NOMCOM_ID is not None:
         return NOMCOM_ID
 
@@ -50,6 +60,7 @@ def get_nomcom_id():
         public_key = entry.get("public_key") or ""
         if target in public_key:
             NOMCOM_ID = int(entry["id"])
+            NOMCOM_YEAR = str(year)
             break
 
     if NOMCOM_ID is None:
@@ -58,16 +69,89 @@ def get_nomcom_id():
     os.makedirs(os.path.dirname(nomcom_id_file), exist_ok=True)
     with open(nomcom_id_file, "w", encoding="utf-8") as f:
         f.write(f"{NOMCOM_ID}\n")
+    with open("config/nomcom_year.txt", "w", encoding="utf-8") as f:
+        f.write(f"{year}\n")
     return NOMCOM_ID
 
+def get_nomcom_year():
+    global NOMCOM_YEAR
+    if NOMCOM_YEAR is not None:
+        return NOMCOM_YEAR
+
+    nomcom_year_file = "config/nomcom_year.txt"
+    if os.path.exists(nomcom_year_file):
+        with open(nomcom_year_file, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if content:
+                NOMCOM_YEAR = content
+                return NOMCOM_YEAR
+
+    nomcom_id = get_nomcom_id()
+    try:
+        url = "https://datatracker.ietf.org/api/v1/nomcom/nomcom/?limit=1000"
+        response = requests.get(url)
+        if response.status_code == 200:
+            for entry in response.json().get("objects", []):
+                if entry.get("id") == nomcom_id:
+                    public_key = entry.get("public_key") or ""
+                    m = re.search(r'nomcom(\d{4})', public_key)
+                    if m:
+                        NOMCOM_YEAR = m.group(1)
+                        break
+    except Exception:
+        pass
+
+    if NOMCOM_YEAR is None:
+        if nomcom_id == 17:
+            NOMCOM_YEAR = "2026"
+        elif nomcom_id == 16:
+            NOMCOM_YEAR = "2025"
+        else:
+            NOMCOM_YEAR = "2026"
+
+    os.makedirs(os.path.dirname(nomcom_year_file), exist_ok=True)
+    with open(nomcom_year_file, "w", encoding="utf-8") as f:
+        f.write(f"{NOMCOM_YEAR}\n")
+
+    return NOMCOM_YEAR
+
 def get_position_short_name(name):
-    return POSITION_SHORT_NAMES.get(name, name)
+    if not name:
+        return name
+    if name in POSITION_SHORT_NAMES:
+        return POSITION_SHORT_NAMES[name]
+    for full_name, s_name in POSITION_SHORT_NAMES.items():
+        if full_name.lower() == name.lower():
+            return s_name
+    match = re.search(r'\(([A-Z0-9]+)\)', name)
+    if match:
+        return match.group(1)
+    if "IPMC" in name:
+        return "IPMC"
+    if "LLC" in name:
+        return "LLC"
+    if "Trust" in name:
+        return "Trust"
+    if "GEN" in name or "General" in name:
+        return "GEN"
+    return name
 
 def get_position_full_name(short_name):
+    if not short_name:
+        return short_name
+    try:
+        positions = get_positions()
+        for p in positions:
+            name = p.get('name', '')
+            if get_position_short_name(name) == short_name:
+                return name
+    except Exception:
+        pass
+
     for full_name, s_name in POSITION_SHORT_NAMES.items():
         if s_name == short_name:
             return full_name
-    return None
+    return short_name
 
 def get_positions(force_metadata=False):
     global POSITIONS_DATA
@@ -133,6 +217,11 @@ def get_topic_id_from_position_name(position_full_name, force_metadata=False):
     if expanded_full_name:
         for topic in topics:
             if expanded_full_name in topic['subject']:
+                return topic['id']
+    short_name = get_position_short_name(position_full_name)
+    if short_name:
+        for topic in topics:
+            if short_name in topic['subject']:
                 return topic['id']
     if 'Internet Architecture Board' in position_full_name or (expanded_full_name is not None and 'Internet Architecture Board' in expanded_full_name):
         for topic in topics:

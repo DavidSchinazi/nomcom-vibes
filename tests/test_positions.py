@@ -18,11 +18,13 @@ class TestGetNomcomId(unittest.TestCase):
         self.temp_dir = tempfile.TemporaryDirectory()
         os.chdir(self.temp_dir.name)
         positions.NOMCOM_ID = None
+        positions.NOMCOM_YEAR = None
 
     def tearDown(self):
         os.chdir(self.orig_cwd)
         self.temp_dir.cleanup()
         positions.NOMCOM_ID = None
+        positions.NOMCOM_YEAR = None
 
     @patch('bin.positions.requests.get')
     @patch('builtins.input', return_value='2026')
@@ -45,6 +47,9 @@ class TestGetNomcomId(unittest.TestCase):
         self.assertTrue(os.path.exists("config/nomcom_id.txt"))
         with open("config/nomcom_id.txt", "r", encoding="utf-8") as f:
             self.assertEqual(f.read().strip(), "17")
+        self.assertTrue(os.path.exists("config/nomcom_year.txt"))
+        with open("config/nomcom_year.txt", "r", encoding="utf-8") as f:
+            self.assertEqual(f.read().strip(), "2026")
 
     @patch('bin.positions.requests.get')
     @patch('builtins.input')
@@ -74,6 +79,48 @@ class TestGetNomcomId(unittest.TestCase):
             positions.get_nomcom_id()
 
         self.assertFalse(os.path.exists("config/nomcom_id.txt"))
+
+
+class TestPositionNames(unittest.TestCase):
+    def test_2026_position_short_and_full_names(self):
+        expected_mappings = {
+            "The Web and Internet Transport (WIT) AD": "WIT",
+            "Security Area (SEC) AD": "SEC",
+            "Routing Area (RTG) AD": "RTG",
+            "Operations and Management Area (OPS) AD": "OPS",
+            "Internet Area (INT) AD": "INT",
+            "Applications and Real-Time Area (ART) AD": "ART",
+            "Internet Architecture Board (IAB), Member": "IAB",
+            "IETF IPMC Board, Director": "IPMC",
+        }
+        for full_name, expected_short in expected_mappings.items():
+            short = positions.get_position_short_name(full_name)
+            self.assertEqual(short, expected_short, f"Failed for {full_name}")
+            derived_full = positions.get_position_full_name(short)
+            self.assertIsNotNone(derived_full)
+            self.assertNotEqual(derived_full, "None")
+
+    def test_unknown_position_name_does_not_return_none(self):
+        unknown = "Custom Novel Working Group Chair"
+        self.assertEqual(positions.get_position_short_name(unknown), unknown)
+        self.assertEqual(positions.get_position_full_name(unknown), unknown)
+        self.assertIsNotNone(positions.get_position_full_name("NONEXISTENT"))
+
+
+class TestFeedbackHelpers(unittest.TestCase):
+    def test_clean_session_id(self):
+        import bin.feedback as feedback
+        self.assertEqual(feedback.clean_session_id("sessionid=abc123xyz;"), "abc123xyz")
+        self.assertEqual(feedback.clean_session_id("  sessionid=abc123xyz; \n"), "abc123xyz")
+        self.assertEqual(feedback.clean_session_id("abc123xyz"), "abc123xyz")
+        self.assertEqual(feedback.clean_session_id('"abc123xyz"'), "abc123xyz")
+
+    def test_is_sign_in_page(self):
+        import bin.feedback as feedback
+        login_html = "<html><head><title>Sign in</title></head><body>Please sign in</body></html>"
+        feedback_html = "<html><head><title>Feedback</title></head><body><div id='comment'>Nice</div></body></html>"
+        self.assertTrue(feedback.is_sign_in_page(login_html))
+        self.assertFalse(feedback.is_sign_in_page(feedback_html))
 
 
 if __name__ == '__main__':
