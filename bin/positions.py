@@ -33,45 +33,6 @@ POSITION_SHORT_NAMES = {
     "The Web and Internet Transport (WIT) AD": "WIT"
 }
 
-def get_nomcom_id():
-    global NOMCOM_ID, NOMCOM_YEAR
-    if NOMCOM_ID is not None:
-        return NOMCOM_ID
-
-    nomcom_id_file = "config/nomcom_id.txt"
-    if os.path.exists(nomcom_id_file):
-        with open(nomcom_id_file, "r", encoding="utf-8") as f:
-            content = f.read().strip()
-            if content:
-                NOMCOM_ID = int(content)
-                return NOMCOM_ID
-
-    year = input("Please enter the year that your NomCom was selected (e.g., 2026): ").strip()
-    if not year:
-        raise ValueError("NomCom year cannot be empty")
-
-    url = "https://datatracker.ietf.org/api/v1/nomcom/nomcom/?limit=1000"
-    response = requests.get(url)
-    response.raise_for_status()
-    nomcoms_data = response.json()
-
-    target = f"nomcom{year}"
-    for entry in nomcoms_data.get("objects", []):
-        public_key = entry.get("public_key") or ""
-        if target in public_key:
-            NOMCOM_ID = int(entry["id"])
-            NOMCOM_YEAR = str(year)
-            break
-
-    if NOMCOM_ID is None:
-        raise ValueError(f"Could not find NomCom ID for year {year}")
-
-    os.makedirs(os.path.dirname(nomcom_id_file), exist_ok=True)
-    with open(nomcom_id_file, "w", encoding="utf-8") as f:
-        f.write(f"{NOMCOM_ID}\n")
-    with open("config/nomcom_year.txt", "w", encoding="utf-8") as f:
-        f.write(f"{year}\n")
-    return NOMCOM_ID
 
 def get_nomcom_year():
     global NOMCOM_YEAR
@@ -86,34 +47,51 @@ def get_nomcom_year():
                 NOMCOM_YEAR = content
                 return NOMCOM_YEAR
 
-    nomcom_id = get_nomcom_id()
-    try:
-        url = "https://datatracker.ietf.org/api/v1/nomcom/nomcom/?limit=1000"
-        response = requests.get(url)
-        if response.status_code == 200:
-            for entry in response.json().get("objects", []):
-                if entry.get("id") == nomcom_id:
-                    public_key = entry.get("public_key") or ""
-                    m = re.search(r'nomcom(\d{4})', public_key)
-                    if m:
-                        NOMCOM_YEAR = m.group(1)
-                        break
-    except Exception:
-        pass
-
-    if NOMCOM_YEAR is None:
-        if nomcom_id == 17:
-            NOMCOM_YEAR = "2026"
-        elif nomcom_id == 16:
-            NOMCOM_YEAR = "2025"
-        else:
-            NOMCOM_YEAR = "2026"
-
+    year = input("Please enter the year that your NomCom was selected (e.g., 2026): ").strip()
+    if not year:
+        raise ValueError("NomCom year cannot be empty")
     os.makedirs(os.path.dirname(nomcom_year_file), exist_ok=True)
     with open(nomcom_year_file, "w", encoding="utf-8") as f:
-        f.write(f"{NOMCOM_YEAR}\n")
-
+        f.write(f"{year}\n")
+    NOMCOM_YEAR = year
     return NOMCOM_YEAR
+
+def get_nomcom_id():
+    global NOMCOM_ID
+    if NOMCOM_ID is not None:
+        return NOMCOM_ID
+
+    nomcom_id_file = "config/nomcom_id.txt"
+    if os.path.exists(nomcom_id_file):
+        with open(nomcom_id_file, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if content:
+                NOMCOM_ID = int(content)
+                return NOMCOM_ID
+
+    year = get_nomcom_year()
+
+    url = "https://datatracker.ietf.org/api/v1/nomcom/nomcom/?limit=1000"
+    response = requests.get(url)
+    response.raise_for_status()
+    nomcoms_data = response.json()
+
+    nomcom_id = None
+    target = f"nomcom{year}"
+    for entry in nomcoms_data.get("objects", []):
+        public_key = entry.get("public_key") or ""
+        if target in public_key:
+            nomcom_id = int(entry["id"])
+            break
+
+    if nomcom_id is None:
+        raise ValueError(f"Could not find NomCom ID for year {year}")
+
+    os.makedirs(os.path.dirname(nomcom_id_file), exist_ok=True)
+    with open(nomcom_id_file, "w", encoding="utf-8") as f:
+        f.write(f"{nomcom_id}\n")
+    NOMCOM_ID = nomcom_id
+    return NOMCOM_ID
 
 def get_position_short_name(name):
     if not name:
