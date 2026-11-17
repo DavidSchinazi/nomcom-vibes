@@ -2,4 +2,4 @@ data/
 config/
 output/
 SCRATCH.md
-bin/__pycache__
+**/__pycache__/

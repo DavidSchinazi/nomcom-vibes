@@ -11,7 +11,7 @@ class TestFormat(unittest.TestCase):
     def test_run_formatting(self):
         # This is a basic test to ensure the script runs without errors.
         # It doesn't check the output, but it will fail if the script crashes.
-        run_formatting()
+        run_formatting(summaries_forced=False)
 
 if __name__ == '__main__':
     unittest.main()

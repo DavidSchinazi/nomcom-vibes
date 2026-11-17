@@ -65,13 +65,60 @@ def get_ai_summary(prompt, use_pro_model=False, summaries_forced=None):
     """Summarizes the feedback text using the Gemini API."""
     try:
         api_key = get_gemini_api_key(summaries_forced=summaries_forced)
+        if not api_key:
+            return "<h1>Error summarizing feedback</h1><p>No Gemini API key provided</p>", False
+
         from google import genai
-        client = genai.Client(api_key=api_key)
-        response = client.interactions.create(
-            model='gemini-pro-latest' if use_pro_model else 'gemini-flash-latest',
-            input=prompt
+        client = genai.Client(api_key=api_key, http_options={'timeout': 30000})
+
+        candidate_models = (
+            ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-pro-latest']
+            if use_pro_model
+            else ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest']
         )
-        summary_text = response.output_text
+
+        import time
+        max_retries = 3
+        last_error = None
+        summary_text = None
+
+        for attempt in range(max_retries):
+            for model_name in candidate_models:
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt
+                    )
+                    if response and response.text:
+                        summary_text = response.text
+                        break
+                except Exception as e:
+                    last_error = e
+
+                try:
+                    if hasattr(client, "interactions") and hasattr(client.interactions, "create"):
+                        response = client.interactions.create(
+                            model=model_name,
+                            input=prompt
+                        )
+                        out = getattr(response, "output_text", getattr(response, "text", None))
+                        if out:
+                            summary_text = out
+                            break
+                except Exception as e:
+                    last_error = e
+
+                if summary_text:
+                    break
+
+            if summary_text:
+                break
+            if attempt < max_retries - 1:
+                time.sleep(1.5 * (attempt + 1))
+
+        if not summary_text:
+            raise RuntimeError(f"All candidate models failed. Last error: {last_error}")
+
         # Extract HTML from markdown code block if present
         match = re.search(r"<[a-zA-Z][^>]*>.*</[a-zA-Z][^>]*>", summary_text, re.DOTALL)
         if match:
@@ -133,7 +180,8 @@ def get_ai_summary_for_nominee_and_position(nominee_id, position, force_metadata
                 f.write(summary)
             NOMINEE_POSITIONS_SUMMARIZED.append(nominee_position)
         else:
-            print("Failed to get AI summary")
+            print(f"Failed to get AI summary for {nominee_position}: {summary}")
+            return "<p><em>AI summary temporarily unavailable. Re-run <code>./bin/run.py</code> to retry.</em></p>"
     return summary
 
 def get_ai_summary_for_position(position, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
@@ -177,6 +225,9 @@ def get_ai_summary_for_position(position, force_metadata=False, force_feedback=F
             with open(summary_file, "w", encoding="utf-8") as f:
                 f.write(summary)
             POSITIONS_SUMMARIZED.append(position)
+        else:
+            print(f"Failed to get AI summary for {position}: {summary}")
+            return "<p><em>AI summary temporarily unavailable. Re-run <code>./bin/run.py</code> to retry.</em></p>"
     return summary
 
 def run_summarize(nominee_id=None, position=None, force_metadata=False, force_feedback=False, force_parse=False, redo_summaries=False, summaries_forced=None):
