@@ -69,9 +69,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </body>
 </html>"""
 
+def get_source_logo_path():
+    """Determines the appropriate logo path based on NomCom year and available files."""
+    try:
+        year = str(get_nomcom_year())
+    except Exception:
+        year = None
+
+    if year == "2026":
+        for candidate in ["static/logo-2026.jpg", "logo-2026.jpg"]:
+            if os.path.exists(candidate):
+                return candidate
+    elif year:
+        for candidate in [f"static/logo-{year}.jpg", f"logo-{year}.jpg"]:
+            if os.path.exists(candidate):
+                return candidate
+
+    for candidate in ["static/logo.jpg", "logo.jpg"]:
+        if os.path.exists(candidate):
+            return candidate
+
+    return "static/logo.jpg"
+
 def copy_logo():
     """Copies the logo to the data directory."""
-    source_logo_path = "static/logo.jpg"
+    source_logo_path = get_source_logo_path()
     destination_logo_path = "output/data/logo.jpg"
     if os.path.exists(source_logo_path):
         os.makedirs(os.path.dirname(destination_logo_path), exist_ok=True)
